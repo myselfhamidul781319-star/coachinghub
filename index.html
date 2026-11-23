@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CoachingHub - Management Portal</title>
+  <title>CoachingHub</title>
   <link rel="manifest" href="manifest.json">
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    body { background-color: #0b1120; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: #f8fafc; }
+    body { background-color: #0b1120; font-family: sans-serif; color: #f8fafc; }
     .glass-card { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); }
     @media print {
       body * { visibility: hidden; }
@@ -17,7 +17,7 @@
     }
   </style>
 </head>
-<body class="min-h-screen flex flex-col justify-between">
+<body class="min-h-screen">
 
   <!-- ================= AUTH VIEW ================= -->
   <div id="authView" class="p-4 flex flex-col items-center justify-center min-h-screen">
@@ -34,11 +34,11 @@
 
       <!-- Tabs -->
       <div class="grid grid-cols-2 bg-slate-900/60 p-1 rounded-xl mb-4 text-xs font-semibold">
-        <button id="tabLogin" onclick="switchAuthMode('login')" class="py-2 rounded-lg bg-blue-600 text-white">Sign In</button>
-        <button id="tabRegister" onclick="switchAuthMode('register')" class="py-2 rounded-lg text-slate-400">Sign Up</button>
+        <button type="button" id="tabLogin" class="py-2 rounded-lg bg-blue-600 text-white">Sign In</button>
+        <button type="button" id="tabRegister" class="py-2 rounded-lg text-slate-400">Sign Up</button>
       </div>
 
-      <form id="authForm" onsubmit="handleAuthSubmit(event)" class="space-y-3">
+      <form id="authForm" class="space-y-3">
         <div id="nameField" class="hidden">
           <label class="text-[11px] text-slate-400">Full Name</label>
           <input type="text" id="authName" class="w-full mt-1 px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-sm text-white focus:outline-none focus:border-blue-500">
@@ -46,7 +46,7 @@
 
         <div>
           <label class="text-[11px] text-slate-400">Account Role</label>
-          <select id="authRole" onchange="toggleRoleFields()" class="w-full mt-1 px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-sm text-white focus:outline-none focus:border-blue-500">
+          <select id="authRole" class="w-full mt-1 px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-sm text-white focus:outline-none focus:border-blue-500">
             <option value="Teacher / Admin">Teacher / Admin</option>
             <option value="Student">Student</option>
           </select>
@@ -77,20 +77,16 @@
 
   <!-- ================= TEACHER DASHBOARD ================= -->
   <div id="teacherView" class="hidden min-h-screen p-4 pb-24">
-    <!-- Header -->
     <div class="flex justify-between items-center mb-5">
       <div>
-        <h1 class="text-xl font-bold text-white flex items-center gap-2">
-          <span id="teacherCoachingTitle">My Coaching</span>
-        </h1>
+        <h1 class="text-xl font-bold text-white" id="teacherCoachingTitle">Teacher Portal</h1>
         <p class="text-xs text-slate-400">Coaching Code: <span id="teacherCodeBadge" class="text-blue-400 font-mono font-bold"></span></p>
       </div>
-      <button onclick="logout()" class="p-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs">
+      <button id="teacherLogoutBtn" class="p-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs">
         <i class="fas fa-sign-out-alt"></i>
       </button>
     </div>
 
-    <!-- Stats -->
     <div class="grid grid-cols-2 gap-3 mb-5">
       <div class="glass-card p-4 rounded-xl">
         <span class="text-[11px] text-slate-400">Enrolled Students</span>
@@ -102,12 +98,8 @@
       </div>
     </div>
 
-    <!-- Student List / Fee Collection -->
     <div class="glass-card p-4 rounded-xl">
-      <div class="flex justify-between items-center mb-3">
-        <h3 class="text-sm font-semibold text-white">Student Roster</h3>
-        <span class="text-[10px] text-slate-400">Auto-synced</span>
-      </div>
+      <h3 class="text-sm font-semibold text-white mb-3">Student Roster</h3>
       <div id="teacherStudentList" class="space-y-2 text-xs">
         <p class="text-slate-500 italic py-2">No students registered with this coaching code yet.</p>
       </div>
@@ -118,10 +110,10 @@
   <div id="studentView" class="hidden min-h-screen p-4 pb-24">
     <div class="flex justify-between items-center mb-5">
       <div>
-        <h1 class="text-xl font-bold text-white" id="studentWelcomeName">Welcome</h1>
-        <p class="text-xs text-slate-400">Coaching: <span id="studentEnrolledCode" class="text-blue-400 font-mono font-bold"></span></p>
+        <h1 class="text-xl font-bold text-white" id="studentWelcomeName">Student Portal</h1>
+        <p class="text-xs text-slate-400">Coaching Code: <span id="studentEnrolledCode" class="text-blue-400 font-mono font-bold"></span></p>
       </div>
-      <button onclick="logout()" class="p-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs">
+      <button id="studentLogoutBtn" class="p-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs">
         <i class="fas fa-sign-out-alt"></i>
       </button>
     </div>
@@ -131,7 +123,6 @@
       <h3 class="text-2xl font-bold text-emerald-400 mt-1" id="studentTotalPaid">₹0</h3>
     </div>
 
-    <!-- Receipts -->
     <div class="glass-card p-4 rounded-xl">
       <h3 class="text-sm font-semibold text-white mb-3">Payment Receipts</h3>
       <div id="studentReceiptList" class="space-y-2 text-xs">
@@ -143,7 +134,7 @@
   <!-- ================= FEE MODAL ================= -->
   <div id="feeModal" class="hidden fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
     <div class="bg-slate-900 border border-slate-800 w-full max-w-xs p-5 rounded-2xl">
-      <h3 class="text-sm font-bold text-white mb-3">Collect Fee</h3>
+      <h3 class="text-sm font-bold text-white mb-2">Collect Fee</h3>
       <p class="text-xs text-slate-400 mb-3">Student: <span id="feeModalStudentName" class="text-white font-semibold"></span></p>
       <div class="space-y-3">
         <div>
@@ -156,8 +147,8 @@
         </div>
       </div>
       <div class="flex gap-2 mt-4">
-        <button onclick="submitFeePayment()" class="flex-1 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold">Submit & Generate</button>
-        <button onclick="closeFeeModal()" class="px-3 py-2 bg-slate-800 text-slate-400 rounded-lg text-xs">Cancel</button>
+        <button id="submitFeeBtn" class="flex-1 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold">Submit & Generate</button>
+        <button id="cancelFeeBtn" class="px-3 py-2 bg-slate-800 text-slate-400 rounded-lg text-xs">Cancel</button>
       </div>
     </div>
   </div>
@@ -187,44 +178,17 @@
         <button onclick="window.print()" class="flex-1 py-2 bg-slate-900 text-white rounded-lg text-xs font-semibold flex items-center justify-center gap-1">
           <i class="fas fa-print"></i> Print/PDF
         </button>
-        <button onclick="shareWhatsApp()" class="flex-1 py-2 bg-emerald-600 text-white rounded-lg text-xs font-semibold flex items-center justify-center gap-1">
+        <button id="whatsAppShareBtn" class="flex-1 py-2 bg-emerald-600 text-white rounded-lg text-xs font-semibold flex items-center justify-center gap-1">
           <i class="fab fa-whatsapp"></i> WhatsApp
         </button>
       </div>
-      <button onclick="document.getElementById('receiptModal').classList.add('hidden')" class="w-full mt-2 py-1 text-xs text-slate-500">Close</button>
+      <button id="closeRcptBtn" class="w-full mt-2 py-1 text-xs text-slate-500">Close</button>
     </div>
   </div>
 
-  <!-- Firebase Scripts -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword,     onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        document.getElementById('authView').classList.add('hidden');
-        try {
-          const userDoc = await getDoc(doc(db, "users", user.uid));
-          if (userDoc.exists()) {
-            const data = userDoc.data();
-            if (data.role === "Student") {
-              loadStudentPanel(user.uid, data);
-            } else {
-              loadTeacherPanel(user.uid, data);
-            }
-          } else {
-            // Agar purane account ka record na mile toh default teacher panel kholo
-            loadTeacherPanel(user.uid, { name: user.email.split('@')[0], coachingCode: "HUB-781" });
-          }
-        } catch (err) {
-          console.error(err);
-          loadTeacherPanel(user.uid, { name: "Teacher", coachingCode: "HUB-781" });
-        }
-      } else {
-        document.getElementById('authView').classList.remove('hidden');
-        document.getElementById('teacherView').classList.add('hidden');
-        document.getElementById('studentView').classList.add('hidden');
-      }
-    });
-    , signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
     import { getFirestore, doc, setDoc, getDoc, collection, addDoc, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -244,57 +208,61 @@
     let activeStudentTarget = null;
     let activeReceiptData = null;
 
-    window.switchAuthMode = (mode) => {
-      authMode = mode;
-      document.getElementById('authErrorMsg').innerText = "";
-      if (mode === "login") {
-        document.getElementById('tabLogin').className = "py-2 rounded-lg bg-blue-600 text-white";
-        document.getElementById('tabRegister').className = "py-2 rounded-lg text-slate-400";
-        document.getElementById('nameField').classList.add('hidden');
-        document.getElementById('btnAuthAction').innerText = "Sign In";
-        document.getElementById('studentCodeField').classList.add('hidden');
+    const tabLogin = document.getElementById('tabLogin');
+    const tabRegister = document.getElementById('tabRegister');
+    const nameField = document.getElementById('nameField');
+    const studentCodeField = document.getElementById('studentCodeField');
+    const authRole = document.getElementById('authRole');
+    const btnAuthAction = document.getElementById('btnAuthAction');
+    const authErrorMsg = document.getElementById('authErrorMsg');
+
+    tabLogin.addEventListener('click', () => {
+      authMode = "login";
+      tabLogin.className = "py-2 rounded-lg bg-blue-600 text-white";
+      tabRegister.className = "py-2 rounded-lg text-slate-400";
+      nameField.classList.add('hidden');
+      studentCodeField.classList.add('hidden');
+      btnAuthAction.innerText = "Sign In";
+      authErrorMsg.innerText = "";
+    });
+
+    tabRegister.addEventListener('click', () => {
+      authMode = "register";
+      tabRegister.className = "py-2 rounded-lg bg-blue-600 text-white";
+      tabLogin.className = "py-2 rounded-lg text-slate-400";
+      nameField.classList.remove('hidden');
+      btnAuthAction.innerText = "Create Account";
+      authErrorMsg.innerText = "";
+      updateRoleFields();
+    });
+
+    function updateRoleFields() {
+      if (authMode === "register" && authRole.value === "Student") {
+        studentCodeField.classList.remove('hidden');
       } else {
-        document.getElementById('tabRegister').className = "py-2 rounded-lg bg-blue-600 text-white";
-        document.getElementById('tabLogin').className = "py-2 rounded-lg text-slate-400";
-        document.getElementById('nameField').classList.remove('hidden');
-        document.getElementById('btnAuthAction').innerText = "Create Account";
-        toggleRoleFields();
+        studentCodeField.classList.add('hidden');
       }
-    };
+    }
+    authRole.addEventListener('change', updateRoleFields);
 
-    window.toggleRoleFields = () => {
-      if (authMode === "register") {
-        const role = document.getElementById('authRole').value;
-        if (role === "Student") {
-          document.getElementById('studentCodeField').classList.remove('hidden');
-        } else {
-          document.getElementById('studentCodeField').classList.add('hidden');
-        }
-      }
-    };
-
-    window.handleAuthSubmit = async (e) => {
+    document.getElementById('authForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const email = document.getElementById('authEmail').value.trim();
       const password = document.getElementById('authPassword').value;
-      const role = document.getElementById('authRole').value;
+      const role = authRole.value;
       const name = document.getElementById('authName').value.trim();
-      const errorMsg = document.getElementById('authErrorMsg');
-      errorMsg.innerText = "Please wait...";
+      authErrorMsg.innerText = "Please wait...";
 
       try {
         if (authMode === "register") {
           const userCred = await createUserWithEmailAndPassword(auth, email, password);
-          const uid = userCred.user.uid;
           let coachingCode = "";
-
           if (role === "Teacher / Admin") {
             coachingCode = "HUB-" + Math.floor(100 + Math.random() * 900);
           } else {
             coachingCode = document.getElementById('authCoachingCode').value.trim().toUpperCase() || "HUB-781";
           }
-
-          await setDoc(doc(db, "users", uid), {
+          await setDoc(doc(db, "users", userCred.user.uid), {
             name: name || "User",
             email,
             role,
@@ -305,21 +273,27 @@
           await signInWithEmailAndPassword(auth, email, password);
         }
       } catch (err) {
-        errorMsg.innerText = err.message.replace("Firebase: ", "");
+        authErrorMsg.innerText = err.message.replace("Firebase: ", "");
       }
-    };
+    });
 
     onAuthStateChanged(auth, async (user) => {
       if (user) {
         document.getElementById('authView').classList.add('hidden');
-        const userDoc = await getDoc(doc(db, "users", user.uid));
-        if (userDoc.exists()) {
-          const data = userDoc.data();
-          if (data.role === "Teacher / Admin") {
-            loadTeacherPanel(user.uid, data);
+        try {
+          const userDoc = await getDoc(doc(db, "users", user.uid));
+          if (userDoc.exists()) {
+            const data = userDoc.data();
+            if (data.role === "Student") {
+              loadStudentPanel(user.uid, data);
+            } else {
+              loadTeacherPanel(user.uid, data);
+            }
           } else {
-            loadStudentPanel(user.uid, data);
+            loadTeacherPanel(user.uid, { name: user.email.split('@')[0], coachingCode: "HUB-781" });
           }
+        } catch (e) {
+          loadTeacherPanel(user.uid, { name: "Teacher", coachingCode: "HUB-781" });
         }
       } else {
         document.getElementById('authView').classList.remove('hidden');
@@ -330,7 +304,7 @@
 
     function loadTeacherPanel(uid, userData) {
       document.getElementById('teacherView').classList.remove('hidden');
-      document.getElementById('teacherCoachingTitle').innerText = (userData.name || "My") + "'s Hub";
+      document.getElementById('teacherCoachingTitle').innerText = (userData.name || "Teacher") + "'s Hub";
       document.getElementById('teacherCodeBadge').innerText = userData.coachingCode || "HUB-781";
 
       const qStudents = query(collection(db, "users"), where("coachingCode", "==", userData.coachingCode), where("role", "==", "Student"));
@@ -341,20 +315,29 @@
           container.innerHTML = '<p class="text-slate-500 italic py-2">No students registered yet with code: ' + userData.coachingCode + '</p>';
           return;
         }
-        container.innerHTML = snap.docs.map(docSnap => {
+        container.innerHTML = "";
+        snap.forEach(docSnap => {
           const s = docSnap.data();
-          return `
-            <div class="flex justify-between items-center p-2.5 bg-slate-800/80 rounded-xl">
-              <div>
-                <p class="font-semibold text-white">${s.name}</p>
-                <p class="text-[10px] text-slate-400">${s.email}</p>
-              </div>
-              <button onclick="openFeeModal('${docSnap.id}', '${s.name}', '${userData.coachingCode}')" class="px-2.5 py-1 bg-emerald-600/20 text-emerald-400 hover:bg-emerald-600 hover:text-white rounded-lg text-xs font-semibold">
-                + Collect Fee
-              </button>
+          const div = document.createElement('div');
+          div.className = "flex justify-between items-center p-2.5 bg-slate-800/80 rounded-xl";
+          div.innerHTML = `
+            <div>
+              <p class="font-semibold text-white">${s.name}</p>
+              <p class="text-[10px] text-slate-400">${s.email}</p>
             </div>
+            <button class="px-2.5 py-1 bg-emerald-600/20 text-emerald-400 hover:bg-emerald-600 hover:text-white rounded-lg text-xs font-semibold">
+              + Collect Fee
+            </button>
           `;
-        }).join('');
+          div.querySelector('button').addEventListener('click', () => {
+            activeStudentTarget = { studentId: docSnap.id, studentName: s.name, coachingCode: userData.coachingCode };
+            document.getElementById('feeModalStudentName').innerText = s.name;
+            document.getElementById('feeInputAmount').value = "";
+            document.getElementById('feeInputMonth').value = new Date().toLocaleString('en-IN', { month: 'long', year: 'numeric' });
+            document.getElementById('feeModal').classList.remove('hidden');
+          });
+          container.appendChild(div);
+        });
       });
 
       const qFees = query(collection(db, "fees"), where("coachingCode", "==", userData.coachingCode));
@@ -379,38 +362,33 @@
           document.getElementById('studentTotalPaid').innerText = "₹0";
           return;
         }
-        container.innerHTML = snap.docs.map(docSnap => {
+        container.innerHTML = "";
+        snap.forEach(docSnap => {
           const f = docSnap.data();
           total += Number(f.amount || 0);
-          return `
-            <div class="flex justify-between items-center p-2.5 bg-slate-800/80 rounded-xl">
-              <div>
-                <p class="font-semibold text-white">₹${f.amount} - <span class="text-slate-400 font-normal">${f.month}</span></p>
-                <p class="text-[10px] text-slate-400">Date: ${f.date}</p>
-              </div>
-              <button onclick="displayReceipt('${f.receiptNo}', '${userData.name}', '${f.amount}', '${f.month}', '${f.date}', '${userData.coachingCode}')" class="px-2.5 py-1 bg-blue-600/20 text-blue-400 rounded-lg text-xs">
-                Receipt
-              </button>
+          const div = document.createElement('div');
+          div.className = "flex justify-between items-center p-2.5 bg-slate-800/80 rounded-xl";
+          div.innerHTML = `
+            <div>
+              <p class="font-semibold text-white">₹${f.amount} - <span class="text-slate-400 font-normal">${f.month}</span></p>
+              <p class="text-[10px] text-slate-400">Date: ${f.date}</p>
             </div>
+            <button class="px-2.5 py-1 bg-blue-600/20 text-blue-400 rounded-lg text-xs">Receipt</button>
           `;
-        }).join('');
+          div.querySelector('button').addEventListener('click', () => {
+            showReceiptModal(f.receiptNo, userData.name, f.amount, f.month, f.date, userData.coachingCode);
+          });
+          container.appendChild(div);
+        });
         document.getElementById('studentTotalPaid').innerText = "₹" + total;
       });
     }
 
-    window.openFeeModal = (studentId, studentName, coachingCode) => {
-      activeStudentTarget = { studentId, studentName, coachingCode };
-      document.getElementById('feeModalStudentName').innerText = studentName;
-      document.getElementById('feeInputAmount').value = "";
-      document.getElementById('feeInputMonth').value = new Date().toLocaleString('en-IN', { month: 'long', year: 'numeric' });
-      document.getElementById('feeModal').classList.remove('hidden');
-    };
-
-    window.closeFeeModal = () => {
+    document.getElementById('cancelFeeBtn').addEventListener('click', () => {
       document.getElementById('feeModal').classList.add('hidden');
-    };
+    });
 
-    window.submitFeePayment = async () => {
+    document.getElementById('submitFeeBtn').addEventListener('click', async () => {
       const amount = document.getElementById('feeInputAmount').value;
       const month = document.getElementById('feeInputMonth').value || "Current Month";
       if (!amount || Number(amount) <= 0) return alert("Please enter valid amount");
@@ -428,11 +406,11 @@
         receiptNo
       });
 
-      closeFeeModal();
-      displayReceipt(receiptNo, activeStudentTarget.studentName, amount, month, dateStr, activeStudentTarget.coachingCode);
-    };
+      document.getElementById('feeModal').classList.add('hidden');
+      showReceiptModal(receiptNo, activeStudentTarget.studentName, amount, month, dateStr, activeStudentTarget.coachingCode);
+    });
 
-    window.displayReceipt = (receiptNo, studentName, amount, month, date, coachingCode) => {
+    function showReceiptModal(receiptNo, studentName, amount, month, date, coachingCode) {
       activeReceiptData = { receiptNo, studentName, amount, month, date, coachingCode };
       document.getElementById('rcptCoachingName').innerText = "Coaching (" + coachingCode + ")";
       document.getElementById('rcptNo').innerText = receiptNo;
@@ -441,15 +419,20 @@
       document.getElementById('rcptMonth').innerText = month;
       document.getElementById('rcptAmount').innerText = "₹" + amount;
       document.getElementById('receiptModal').classList.remove('hidden');
-    };
+    }
 
-    window.shareWhatsApp = () => {
+    document.getElementById('closeRcptBtn').addEventListener('click', () => {
+      document.getElementById('receiptModal').classList.add('hidden');
+    });
+
+    document.getElementById('whatsAppShareBtn').addEventListener('click', () => {
       if (!activeReceiptData) return;
       const msg = `*Fee Receipt - CoachingHub*%0A*Receipt:* ${activeReceiptData.receiptNo}%0A*Student:* ${activeReceiptData.studentName}%0A*Amount:* ₹${activeReceiptData.amount}%0A*Period:* ${activeReceiptData.month}%0A*Date:* ${activeReceiptData.date}%0A%0APayment Verified ✅`;
       window.open(`https://api.whatsapp.com/send?text=${msg}`, '_blank');
-    };
+    });
 
-    window.logout = () => signOut(auth);
+    document.getElementById('teacherLogoutBtn').addEventListener('click', () => signOut(auth));
+    document.getElementById('studentLogoutBtn').addEventListener('click', () => signOut(auth));
 
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('sw.js');
