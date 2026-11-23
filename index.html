@@ -198,7 +198,33 @@
   <!-- Firebase Scripts -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword,     onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        document.getElementById('authView').classList.add('hidden');
+        try {
+          const userDoc = await getDoc(doc(db, "users", user.uid));
+          if (userDoc.exists()) {
+            const data = userDoc.data();
+            if (data.role === "Student") {
+              loadStudentPanel(user.uid, data);
+            } else {
+              loadTeacherPanel(user.uid, data);
+            }
+          } else {
+            // Agar purane account ka record na mile toh default teacher panel kholo
+            loadTeacherPanel(user.uid, { name: user.email.split('@')[0], coachingCode: "HUB-781" });
+          }
+        } catch (err) {
+          console.error(err);
+          loadTeacherPanel(user.uid, { name: "Teacher", coachingCode: "HUB-781" });
+        }
+      } else {
+        document.getElementById('authView').classList.remove('hidden');
+        document.getElementById('teacherView').classList.add('hidden');
+        document.getElementById('studentView').classList.add('hidden');
+      }
+    });
+    , signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
     import { getFirestore, doc, setDoc, getDoc, collection, addDoc, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     const firebaseConfig = {
