@@ -4,901 +4,429 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CoachingHub - Management Portal</title>
-  <!-- Tailwind CSS via CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Google Font Inter -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="manifest" href="manifest.json">
-<script>
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('sw.js');
-  }
-</script>
-
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <!-- FontAwesome Icons -->
+  <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  
   <style>
-    body {
-      font-family: 'Inter', sans-serif;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .custom-scrollbar::-webkit-scrollbar {
-      width: 6px;
-      height: 6px;
-    }
-    .custom-scrollbar::-webkit-scrollbar-thumb {
-      background-color: #cbd5e1;
-      border-radius: 9999px;
+    body { background-color: #0b1120; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: #f8fafc; }
+    .glass-card { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); }
+    @media print {
+      body * { visibility: hidden; }
+      #printableReceipt, #printableReceipt * { visibility: visible; }
+      #printableReceipt { position: absolute; left: 0; top: 0; width: 100%; border: none !important; }
     }
   </style>
 </head>
-<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col antialiased selection:bg-indigo-500 selection:text-white">
+<body class="min-h-screen flex flex-col justify-between">
 
-  <!-- Notification Toast Modal (No alert allowed) -->
-  <div id="toast" class="fixed top-5 right-5 z-50 transform transition-all duration-300 translate-y-[-120%] opacity-0 pointer-events-none">
-    <div id="toast-body" class="flex items-center gap-3 px-4 py-3 rounded-xl shadow-2xl border text-sm font-medium bg-slate-800 border-slate-700 text-white">
-      <i id="toast-icon" class="fa-solid fa-circle-check text-emerald-400"></i>
-      <span id="toast-msg">Operation successful</span>
-    </div>
-  </div>
-
-  <!-- AUTHENTICATION SCREEN -->
-  <div id="auth-screen" class="min-h-screen flex items-center justify-center p-4">
-    <div class="w-full max-w-md bg-slate-800/90 backdrop-blur-xl border border-slate-700/80 rounded-3xl p-6 sm:p-8 shadow-2xl relative overflow-hidden">
-      <!-- Glow background decoration -->
-      <div class="absolute -top-16 -right-16 w-36 h-36 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none"></div>
-      <div class="absolute -bottom-16 -left-16 w-36 h-36 bg-blue-500/20 rounded-full blur-3xl pointer-events-none"></div>
-
-      <!-- App Header / Logo -->
+  <!-- ================= AUTH VIEW ================= -->
+  <div id="authView" class="p-4 flex flex-col items-center justify-center min-h-screen">
+    <div class="glass-card w-full max-w-sm p-6 rounded-2xl shadow-xl">
       <div class="flex items-center gap-3 mb-6">
-        <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-indigo-600 to-blue-500 flex items-center justify-center shadow-lg shadow-indigo-500/30">
-          <i class="fa-solid fa-graduation-cap text-2xl text-white"></i>
+        <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white text-lg">
+          <i class="fas fa-graduation-cap"></i>
         </div>
         <div>
-          <h1 class="text-xl font-bold tracking-tight text-white flex items-center gap-2">
-            CoachingHub <span class="text-[10px] font-semibold uppercase px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">v1.0</span>
-          </h1>
-          <p class="text-xs text-slate-400">Classroom & Institute Management</p>
+          <h1 class="text-xl font-bold text-white">CoachingHub</h1>
+          <p class="text-xs text-slate-400">Classroom & Institute Portal</p>
         </div>
       </div>
 
-      <!-- Auth Switcher Tabs -->
-      <div class="flex bg-slate-900/80 p-1 rounded-2xl border border-slate-700/60 mb-6 text-sm font-medium">
-        <button id="tab-login" onclick="switchAuthTab('login')" class="flex-1 py-2 rounded-xl text-center transition-all bg-indigo-600 text-white shadow-md">
-          Sign In
-        </button>
-        <button id="tab-signup" onclick="switchAuthTab('signup')" class="flex-1 py-2 rounded-xl text-center text-slate-400 hover:text-white transition-all">
-          Sign Up
-        </button>
+      <!-- Tabs -->
+      <div class="grid grid-cols-2 bg-slate-900/60 p-1 rounded-xl mb-4 text-xs font-semibold">
+        <button id="tabLogin" onclick="switchAuthMode('login')" class="py-2 rounded-lg bg-blue-600 text-white">Sign In</button>
+        <button id="tabRegister" onclick="switchAuthMode('register')" class="py-2 rounded-lg text-slate-400">Sign Up</button>
       </div>
 
-      <!-- Auth Form -->
-      <form id="auth-form" onsubmit="handleAuth(event)" class="space-y-4">
-        <!-- Sign Up extra fields -->
-        <div id="signup-fields" class="space-y-4 hidden">
-          <div>
-            <label class="block text-xs font-medium text-slate-300 mb-1.5">Full Name</label>
-            <div class="relative">
-              <i class="fa-solid fa-user absolute left-3.5 top-3.5 text-xs text-slate-500"></i>
-              <input type="text" id="auth-name" placeholder="Hamidul Islam" class="w-full bg-slate-900 border border-slate-700/80 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 rounded-xl pl-9 pr-3.5 py-2.5 text-sm text-white placeholder-slate-500 outline-none transition">
-            </div>
-          </div>
-          <div>
-            <label class="block text-xs font-medium text-slate-300 mb-1.5">Role</label>
-            <select id="auth-role" class="w-full bg-slate-900 border border-slate-700/80 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 rounded-xl px-3.5 py-2.5 text-sm text-white outline-none transition">
-              <option value="Teacher">Teacher / Admin</option>
-              <option value="Student">Student</option>
-            </select>
-          </div>
+      <form id="authForm" onsubmit="handleAuthSubmit(event)" class="space-y-3">
+        <div id="nameField" class="hidden">
+          <label class="text-[11px] text-slate-400">Full Name</label>
+          <input type="text" id="authName" class="w-full mt-1 px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-sm text-white focus:outline-none focus:border-blue-500">
         </div>
 
         <div>
-          <label class="block text-xs font-medium text-slate-300 mb-1.5">Email Address</label>
-          <div class="relative">
-            <i class="fa-solid fa-envelope absolute left-3.5 top-3.5 text-xs text-slate-500"></i>
-            <input type="email" id="auth-email" required placeholder="teacher@coachinghub.com" class="w-full bg-slate-900 border border-slate-700/80 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 rounded-xl pl-9 pr-3.5 py-2.5 text-sm text-white placeholder-slate-500 outline-none transition">
-          </div>
-        </div>
-
-        <div>
-          <label class="block text-xs font-medium text-slate-300 mb-1.5">Password</label>
-          <div class="relative">
-            <i class="fa-solid fa-lock absolute left-3.5 top-3.5 text-xs text-slate-500"></i>
-            <input type="password" id="auth-password" required placeholder="••••••••" class="w-full bg-slate-900 border border-slate-700/80 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 rounded-xl pl-9 pr-3.5 py-2.5 text-sm text-white placeholder-slate-500 outline-none transition">
-          </div>
-        </div>
-
-        <button type="submit" id="auth-btn" class="w-full mt-2 py-3 px-4 bg-gradient-to-r from-indigo-500 to-blue-600 hover:from-indigo-600 hover:to-blue-700 font-semibold text-white rounded-xl shadow-lg shadow-indigo-500/25 active:scale-[0.98] transition">
-          Sign In
-        </button>
-
-        <!-- Fast Demo Button for Instant Preview -->
-        <button type="button" onclick="demoBypass()" class="w-full py-2.5 px-4 bg-slate-700/50 hover:bg-slate-700 text-xs font-medium text-slate-300 rounded-xl border border-slate-600/50 transition flex items-center justify-center gap-2">
-          <i class="fa-solid fa-bolt text-amber-400"></i> Explore Dashboard as Teacher (Quick Demo)
-        </button>
-      </form>
-
-      <!-- Firebase Setup Banner -->
-      <div class="mt-6 pt-5 border-t border-slate-700/60 text-center">
-        <p class="text-xs text-slate-400">
-          Connected to Firestore Project: 
-          <span class="text-indigo-400 font-mono font-medium">coachinghub-b5b8a</span>
-        </p>
-      </div>
-    </div>
-  </div>
-
-  <!-- DASHBOARD MAIN VIEW (Hidden by default) -->
-  <div id="main-app" class="hidden flex-1 flex flex-col bg-slate-900 min-h-screen">
-    <!-- Navbar -->
-    <header class="bg-slate-800/90 backdrop-blur-md border-b border-slate-700/70 sticky top-0 z-40">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-        <div class="flex items-center gap-3">
-          <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 to-blue-500 flex items-center justify-center shadow-md shadow-indigo-500/20">
-            <i class="fa-solid fa-graduation-cap text-base text-white"></i>
-          </div>
-          <div>
-            <span class="text-base font-bold text-white tracking-tight">CoachingHub</span>
-            <span class="text-xs hidden sm:inline-block ml-2 text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded-full border border-indigo-500/20" id="coaching-badge">Bright Future Coaching (HUB-781)</span>
-          </div>
-        </div>
-
-        <div class="flex items-center gap-3">
-          <!-- Active User pill -->
-          <div class="flex items-center gap-2.5 bg-slate-900 border border-slate-700/80 px-3 py-1.5 rounded-full">
-            <div class="w-7 h-7 rounded-full bg-indigo-600 text-white font-bold flex items-center justify-center text-xs" id="user-avatar">
-              H
-            </div>
-            <div class="text-left hidden sm:block">
-              <p class="text-xs font-semibold leading-tight text-white" id="user-display-name">Hamidul Islam</p>
-              <p class="text-[10px] text-slate-400" id="user-display-role">Teacher / Admin</p>
-            </div>
-          </div>
-
-          <!-- Sign Out Button -->
-          <button onclick="signOutUser()" title="Sign Out" class="p-2 rounded-xl bg-slate-700/50 hover:bg-rose-500/20 hover:text-rose-400 text-slate-300 border border-slate-600/50 transition">
-            <i class="fa-solid fa-arrow-right-from-bracket"></i>
-          </button>
-        </div>
-      </div>
-    </header>
-
-    <!-- App Navigation Tabs -->
-    <div class="bg-slate-850 border-b border-slate-800 bg-slate-800/40">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <nav class="flex gap-2 sm:gap-4 overflow-x-auto py-2 custom-scrollbar text-sm font-medium">
-          <button onclick="setDashboardTab('overview')" id="nav-overview" class="px-4 py-2 rounded-xl transition text-white bg-indigo-600 shadow flex items-center gap-2 whitespace-nowrap">
-            <i class="fa-solid fa-chart-pie text-xs"></i> Overview
-          </button>
-          <button onclick="setDashboardTab('students')" id="nav-students" class="px-4 py-2 rounded-xl transition text-slate-400 hover:text-white hover:bg-slate-800 flex items-center gap-2 whitespace-nowrap">
-            <i class="fa-solid fa-user-graduate text-xs"></i> Students & Staff
-          </button>
-          <button onclick="setDashboardTab('attendance')" id="nav-attendance" class="px-4 py-2 rounded-xl transition text-slate-400 hover:text-white hover:bg-slate-800 flex items-center gap-2 whitespace-nowrap">
-            <i class="fa-solid fa-calendar-check text-xs"></i> Attendance
-          </button>
-          <button onclick="setDashboardTab('fees')" id="nav-fees" class="px-4 py-2 rounded-xl transition text-slate-400 hover:text-white hover:bg-slate-800 flex items-center gap-2 whitespace-nowrap">
-            <i class="fa-solid fa-receipt text-xs"></i> Fees Tracker
-          </button>
-          <button onclick="setDashboardTab('firebase-keys')" id="nav-firebase-keys" class="px-4 py-2 rounded-xl transition text-slate-400 hover:text-white hover:bg-slate-800 flex items-center gap-2 whitespace-nowrap ml-auto">
-            <i class="fa-solid fa-key text-xs text-amber-400"></i> Firebase Config
-          </button>
-        </nav>
-      </div>
-    </div>
-
-    <!-- Main Container Content -->
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full">
-
-      <!-- TAB 1: OVERVIEW -->
-      <section id="view-overview" class="space-y-6">
-        <!-- Hero Stats Cards -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div class="bg-slate-800/70 border border-slate-700/80 rounded-2xl p-4 shadow-sm">
-            <div class="flex items-center justify-between text-slate-400 mb-2">
-              <span class="text-xs font-medium">Total Registered</span>
-              <span class="p-2 bg-indigo-500/10 rounded-lg text-indigo-400"><i class="fa-solid fa-users text-xs"></i></span>
-            </div>
-            <div class="text-2xl font-bold text-white" id="stat-students">2</div>
-            <p class="text-[11px] text-slate-500 mt-1">Firestore /users collection</p>
-          </div>
-
-          <div class="bg-slate-800/70 border border-slate-700/80 rounded-2xl p-4 shadow-sm">
-            <div class="flex items-center justify-between text-slate-400 mb-2">
-              <span class="text-xs font-medium">Coaching Code</span>
-              <span class="p-2 bg-blue-500/10 rounded-lg text-blue-400"><i class="fa-solid fa-hashtag text-xs"></i></span>
-            </div>
-            <div class="text-2xl font-bold text-indigo-400 font-mono" id="stat-code">HUB-781</div>
-            <p class="text-[11px] text-slate-500 mt-1">Firestore /coachings doc</p>
-          </div>
-
-          <div class="bg-slate-800/70 border border-slate-700/80 rounded-2xl p-4 shadow-sm">
-            <div class="flex items-center justify-between text-slate-400 mb-2">
-              <span class="text-xs font-medium">Today's Attendance</span>
-              <span class="p-2 bg-emerald-500/10 rounded-lg text-emerald-400"><i class="fa-solid fa-clipboard-user text-xs"></i></span>
-            </div>
-            <div class="text-2xl font-bold text-emerald-400" id="stat-attendance">1 Present</div>
-            <p class="text-[11px] text-slate-500 mt-1">Recorded for today</p>
-          </div>
-
-          <div class="bg-slate-800/70 border border-slate-700/80 rounded-2xl p-4 shadow-sm">
-            <div class="flex items-center justify-between text-slate-400 mb-2">
-              <span class="text-xs font-medium">Fees Collected</span>
-              <span class="p-2 bg-amber-500/10 rounded-lg text-amber-400"><i class="fa-solid fa-indian-rupee-sign text-xs"></i></span>
-            </div>
-            <div class="text-2xl font-bold text-white" id="stat-fees">₹ 500</div>
-            <p class="text-[11px] text-slate-500 mt-1">Current session total</p>
-          </div>
-        </div>
-
-        <!-- Quick Institute Profile Banner -->
-        <div class="bg-gradient-to-r from-indigo-900/40 via-slate-800/80 to-blue-900/40 border border-indigo-500/30 rounded-3xl p-6 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-          <div>
-            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-300 text-xs font-medium mb-3 border border-indigo-500/30">
-              <i class="fa-solid fa-circle-dot text-[8px] animate-pulse"></i> Database Active (asia-south1)
-            </div>
-            <h2 class="text-2xl font-bold text-white">Bright Future Coaching Hub</h2>
-            <p class="text-sm text-slate-300 mt-1">All data is synchronized with your Firebase Cloud Firestore backend.</p>
-          </div>
-          <div class="flex flex-wrap gap-2">
-            <button onclick="setDashboardTab('attendance')" class="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-medium shadow-md transition flex items-center gap-2">
-              <i class="fa-solid fa-plus"></i> Mark Attendance
-            </button>
-            <button onclick="setDashboardTab('fees')" class="px-4 py-2.5 bg-slate-700 hover:bg-slate-600 text-white rounded-xl text-xs font-medium transition flex items-center gap-2">
-              <i class="fa-solid fa-wallet"></i> Record Fee
-            </button>
-          </div>
-        </div>
-
-        <!-- Recent Logs Table -->
-        <div class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-5 shadow-sm">
-          <div class="flex items-center justify-between mb-4">
-            <h3 class="text-sm font-semibold text-white flex items-center gap-2">
-              <i class="fa-solid fa-clock-rotate-left text-indigo-400"></i> Recent Activity Highlights
-            </h3>
-            <span class="text-xs text-slate-400">Real-time sync</span>
-          </div>
-          <div class="divide-y divide-slate-700/60 text-xs">
-            <div class="py-3 flex items-center justify-between">
-              <div class="flex items-center gap-3">
-                <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
-                <span class="text-white font-medium">Rahul Roy</span>
-                <span class="text-slate-400">marked Present</span>
-              </div>
-              <span class="text-slate-500 font-mono">attendance</span>
-            </div>
-            <div class="py-3 flex items-center justify-between">
-              <div class="flex items-center gap-3">
-                <span class="w-2 h-2 rounded-full bg-amber-400"></span>
-                <span class="text-white font-medium">Rahul Roy</span>
-                <span class="text-slate-400">paid ₹500 (November 2026)</span>
-              </div>
-              <span class="text-slate-500 font-mono">fees</span>
-            </div>
-            <div class="py-3 flex items-center justify-between">
-              <div class="flex items-center gap-3">
-                <span class="w-2 h-2 rounded-full bg-indigo-400"></span>
-                <span class="text-white font-medium">Hamidul Islam</span>
-                <span class="text-slate-400">registered as Teacher</span>
-              </div>
-              <span class="text-slate-500 font-mono">users</span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- TAB 2: STUDENTS & USERS -->
-      <section id="view-students" class="hidden space-y-6">
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-slate-800/60 p-4 rounded-2xl border border-slate-700/70">
-          <div>
-            <h2 class="text-lg font-bold text-white flex items-center gap-2">
-              <i class="fa-solid fa-users text-indigo-400"></i> Users Collection
-            </h2>
-            <p class="text-xs text-slate-400">Firestore path: <code class="text-indigo-300">/users</code></p>
-          </div>
-          <button onclick="toggleStudentModal(true)" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-semibold shadow transition flex items-center gap-2">
-            <i class="fa-solid fa-user-plus"></i> Add New Person
-          </button>
-        </div>
-
-        <!-- Students Table -->
-        <div class="bg-slate-800/80 border border-slate-700/80 rounded-2xl overflow-hidden shadow-sm">
-          <div class="overflow-x-auto">
-            <table class="w-full text-left text-sm">
-              <thead class="bg-slate-900/60 border-b border-slate-700/80 text-xs uppercase font-semibold text-slate-400">
-                <tr>
-                  <th class="px-5 py-3.5">Name</th>
-                  <th class="px-5 py-3.5">Role</th>
-                  <th class="px-5 py-3.5">Status</th>
-                  <th class="px-5 py-3.5 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody id="users-table-body" class="divide-y divide-slate-700/60">
-                <!-- Dynamically populated -->
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
-      <!-- TAB 3: ATTENDANCE -->
-      <section id="view-attendance" class="hidden space-y-6">
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-slate-800/60 p-4 rounded-2xl border border-slate-700/70">
-          <div>
-            <h2 class="text-lg font-bold text-white flex items-center gap-2">
-              <i class="fa-solid fa-calendar-check text-emerald-400"></i> Daily Attendance
-            </h2>
-            <p class="text-xs text-slate-400">Firestore path: <code class="text-emerald-300">/attendance</code></p>
-          </div>
-          <button onclick="toggleAttendanceModal(true)" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold shadow transition flex items-center gap-2">
-            <i class="fa-solid fa-plus"></i> Mark Attendance
-          </button>
-        </div>
-
-        <!-- Attendance List -->
-        <div class="bg-slate-800/80 border border-slate-700/80 rounded-2xl overflow-hidden shadow-sm">
-          <div class="overflow-x-auto">
-            <table class="w-full text-left text-sm">
-              <thead class="bg-slate-900/60 border-b border-slate-700/80 text-xs uppercase font-semibold text-slate-400">
-                <tr>
-                  <th class="px-5 py-3.5">Student Name</th>
-                  <th class="px-5 py-3.5">Date</th>
-                  <th class="px-5 py-3.5">Status</th>
-                  <th class="px-5 py-3.5 text-right">Action</th>
-                </tr>
-              </thead>
-              <tbody id="attendance-table-body" class="divide-y divide-slate-700/60">
-                <!-- Dynamically populated -->
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
-      <!-- TAB 4: FEES TRACKER -->
-      <section id="view-fees" class="hidden space-y-6">
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-slate-800/60 p-4 rounded-2xl border border-slate-700/70">
-          <div>
-            <h2 class="text-lg font-bold text-white flex items-center gap-2">
-              <i class="fa-solid fa-receipt text-amber-400"></i> Fee Management
-            </h2>
-            <p class="text-xs text-slate-400">Firestore path: <code class="text-amber-300">/fees</code></p>
-          </div>
-          <button onclick="toggleFeesModal(true)" class="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-semibold shadow transition flex items-center gap-2">
-            <i class="fa-solid fa-plus"></i> Collect Fee
-          </button>
-        </div>
-
-        <!-- Fees Table -->
-        <div class="bg-slate-800/80 border border-slate-700/80 rounded-2xl overflow-hidden shadow-sm">
-          <div class="overflow-x-auto">
-            <table class="w-full text-left text-sm">
-              <thead class="bg-slate-900/60 border-b border-slate-700/80 text-xs uppercase font-semibold text-slate-400">
-                <tr>
-                  <th class="px-5 py-3.5">Student Name</th>
-                  <th class="px-5 py-3.5">Amount</th>
-                  <th class="px-5 py-3.5">Month / Period</th>
-                  <th class="px-5 py-3.5">Status</th>
-                  <th class="px-5 py-3.5 text-right">Receipt</th>
-                </tr>
-              </thead>
-              <tbody id="fees-table-body" class="divide-y divide-slate-700/60">
-                <!-- Dynamically populated -->
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
-      <!-- TAB 5: FIREBASE CONFIG MANAGER -->
-      <section id="view-firebase-keys" class="hidden space-y-6">
-        <div class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-6 shadow-sm">
-          <div class="flex items-center gap-3 mb-4">
-            <div class="p-2.5 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20">
-              <i class="fa-solid fa-gears text-lg"></i>
-            </div>
-            <div>
-              <h2 class="text-lg font-bold text-white">Firebase Project Configuration</h2>
-              <p class="text-xs text-slate-400">Paste your credentials from the Firebase Console Web App setup</p>
-            </div>
-          </div>
-
-          <div class="space-y-4 text-xs">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label class="block text-slate-300 font-medium mb-1">API Key</label>
-                <input type="text" id="cfg-apiKey" placeholder="AIzaSyAWTAZP3RsKmmeCIrfXiv..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white outline-none">
-              </div>
-              <div>
-                <label class="block text-slate-300 font-medium mb-1">Auth Domain</label>
-                <input type="text" id="cfg-authDomain" value="coachinghub-b5b8a.firebaseapp.com" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white outline-none">
-              </div>
-              <div>
-                <label class="block text-slate-300 font-medium mb-1">Project ID</label>
-                <input type="text" id="cfg-projectId" value="coachinghub-b5b8a" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white outline-none">
-              </div>
-              <div>
-                <label class="block text-slate-300 font-medium mb-1">Storage Bucket</label>
-                <input type="text" id="cfg-storageBucket" value="coachinghub-b5b8a.firebasestorage.app" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white outline-none">
-              </div>
-              <div>
-                <label class="block text-slate-300 font-medium mb-1">Messaging Sender ID</label>
-                <input type="text" id="cfg-messagingSenderId" value="105015281885" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white outline-none">
-              </div>
-              <div>
-                <label class="block text-slate-300 font-medium mb-1">App ID</label>
-                <input type="text" id="cfg-appId" placeholder="1:105015281885:web:..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white outline-none">
-              </div>
-            </div>
-
-            <div class="pt-4 flex flex-wrap items-center gap-3">
-              <button onclick="saveCustomConfig()" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-medium text-xs shadow transition flex items-center gap-2">
-                <i class="fa-solid fa-floppy-disk"></i> Save & Re-initialize SDK
-              </button>
-              <button onclick="loadSampleCredentials()" class="px-4 py-2.5 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-xl font-medium text-xs transition">
-                Prefill from Screenshots
-              </button>
-            </div>
-          </div>
-        </div>
-      </section>
-
-    </main>
-  </div>
-
-  <!-- MODAL: ADD STUDENT/USER -->
-  <div id="modal-student" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-    <div class="bg-slate-800 border border-slate-700 w-full max-w-sm rounded-2xl p-6 shadow-2xl">
-      <div class="flex justify-between items-center mb-4">
-        <h3 class="text-sm font-bold text-white">Add User Profile</h3>
-        <button onclick="toggleStudentModal(false)" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
-      </div>
-      <form onsubmit="addUserRecord(event)" class="space-y-3 text-xs">
-        <div>
-          <label class="block text-slate-300 mb-1">Full Name</label>
-          <input type="text" id="input-user-name" required placeholder="e.g. Ankit Sharma" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white outline-none">
-        </div>
-        <div>
-          <label class="block text-slate-300 mb-1">Role</label>
-          <select id="input-user-role" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white outline-none">
+          <label class="text-[11px] text-slate-400">Account Role</label>
+          <select id="authRole" onchange="toggleRoleFields()" class="w-full mt-1 px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-sm text-white focus:outline-none focus:border-blue-500">
+            <option value="Teacher / Admin">Teacher / Admin</option>
             <option value="Student">Student</option>
-            <option value="Teacher">Teacher</option>
           </select>
         </div>
-        <div class="pt-2 flex justify-end gap-2">
-          <button type="button" onclick="toggleStudentModal(false)" class="px-3 py-2 bg-slate-700 text-slate-300 rounded-xl">Cancel</button>
-          <button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-medium">Save to Firestore</button>
+
+        <div id="studentCodeField" class="hidden">
+          <label class="text-[11px] text-slate-400">Teacher's Coaching Code</label>
+          <input type="text" id="authCoachingCode" placeholder="e.g. HUB-781" class="w-full mt-1 px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-sm text-white focus:outline-none focus:border-blue-500 uppercase">
         </div>
+
+        <div>
+          <label class="text-[11px] text-slate-400">Email Address</label>
+          <input type="email" id="authEmail" required class="w-full mt-1 px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-sm text-white focus:outline-none focus:border-blue-500">
+        </div>
+
+        <div>
+          <label class="text-[11px] text-slate-400">Password</label>
+          <input type="password" id="authPassword" required minlength="6" class="w-full mt-1 px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-sm text-white focus:outline-none focus:border-blue-500">
+        </div>
+
+        <button type="submit" id="btnAuthAction" class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl text-sm transition">
+          Sign In
+        </button>
       </form>
+      <p id="authErrorMsg" class="text-xs text-rose-400 text-center mt-3"></p>
     </div>
   </div>
 
-  <!-- MODAL: MARK ATTENDANCE -->
-  <div id="modal-attendance" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-    <div class="bg-slate-800 border border-slate-700 w-full max-w-sm rounded-2xl p-6 shadow-2xl">
-      <div class="flex justify-between items-center mb-4">
-        <h3 class="text-sm font-bold text-white">Mark Attendance</h3>
-        <button onclick="toggleAttendanceModal(false)" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+  <!-- ================= TEACHER DASHBOARD ================= -->
+  <div id="teacherView" class="hidden min-h-screen p-4 pb-24">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-5">
+      <div>
+        <h1 class="text-xl font-bold text-white flex items-center gap-2">
+          <span id="teacherCoachingTitle">My Coaching</span>
+        </h1>
+        <p class="text-xs text-slate-400">Coaching Code: <span id="teacherCodeBadge" class="text-blue-400 font-mono font-bold"></span></p>
       </div>
-      <form onsubmit="addAttendanceRecord(event)" class="space-y-3 text-xs">
-        <div>
-          <label class="block text-slate-300 mb-1">Student Name</label>
-          <input type="text" id="input-att-name" required placeholder="e.g. Rahul Roy" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white outline-none">
-        </div>
-        <div>
-          <label class="block text-slate-300 mb-1">Date</label>
-          <input type="date" id="input-att-date" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white outline-none">
-        </div>
-        <div>
-          <label class="block text-slate-300 mb-1">Status</label>
-          <select id="input-att-status" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white outline-none">
-            <option value="Present">Present</option>
-            <option value="Absent">Absent</option>
-            <option value="Late">Late</option>
-          </select>
-        </div>
-        <div class="pt-2 flex justify-end gap-2">
-          <button type="button" onclick="toggleAttendanceModal(false)" class="px-3 py-2 bg-slate-700 text-slate-300 rounded-xl">Cancel</button>
-          <button type="submit" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-medium">Record Attendance</button>
-        </div>
-      </form>
+      <button onclick="logout()" class="p-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs">
+        <i class="fas fa-sign-out-alt"></i>
+      </button>
     </div>
-  </div>
 
-  <!-- MODAL: ADD FEES -->
-  <div id="modal-fees" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-    <div class="bg-slate-800 border border-slate-700 w-full max-w-sm rounded-2xl p-6 shadow-2xl">
-      <div class="flex justify-between items-center mb-4">
-        <h3 class="text-sm font-bold text-white">Record Fee Payment</h3>
-        <button onclick="toggleFeesModal(false)" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+    <!-- Stats -->
+    <div class="grid grid-cols-2 gap-3 mb-5">
+      <div class="glass-card p-4 rounded-xl">
+        <span class="text-[11px] text-slate-400">Enrolled Students</span>
+        <h3 class="text-2xl font-bold text-white mt-1" id="statStudentCount">0</h3>
       </div>
-      <form onsubmit="addFeeRecord(event)" class="space-y-3 text-xs">
-        <div>
-          <label class="block text-slate-300 mb-1">Student Name</label>
-          <input type="text" id="input-fee-name" required placeholder="e.g. Rahul Roy" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white outline-none">
-        </div>
-        <div>
-          <label class="block text-slate-300 mb-1">Amount (₹)</label>
-          <input type="number" id="input-fee-amount" required value="500" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white outline-none">
-        </div>
-        <div>
-          <label class="block text-slate-300 mb-1">Month / Session</label>
-          <input type="text" id="input-fee-month" required value="November 2026" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white outline-none">
-        </div>
-        <div>
-          <label class="block text-slate-300 mb-1">Status</label>
-          <select id="input-fee-status" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white outline-none">
-            <option value="Paid">Paid</option>
-            <option value="Pending">Pending</option>
-          </select>
-        </div>
-        <div class="pt-2 flex justify-end gap-2">
-          <button type="button" onclick="toggleFeesModal(false)" class="px-3 py-2 bg-slate-700 text-slate-300 rounded-xl">Cancel</button>
-          <button type="submit" class="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl font-medium">Save Record</button>
-        </div>
-      </form>
+      <div class="glass-card p-4 rounded-xl">
+        <span class="text-[11px] text-slate-400">Fees Collected</span>
+        <h3 class="text-2xl font-bold text-emerald-400 mt-1" id="statFeeTotal">₹0</h3>
+      </div>
+    </div>
+
+    <!-- Student List / Fee Collection -->
+    <div class="glass-card p-4 rounded-xl">
+      <div class="flex justify-between items-center mb-3">
+        <h3 class="text-sm font-semibold text-white">Student Roster</h3>
+        <span class="text-[10px] text-slate-400">Auto-synced</span>
+      </div>
+      <div id="teacherStudentList" class="space-y-2 text-xs">
+        <p class="text-slate-500 italic py-2">No students registered with this coaching code yet.</p>
+      </div>
     </div>
   </div>
 
-  <!-- APPLICATION LOGIC & STATE (With modular SDK import) -->
+  <!-- ================= STUDENT DASHBOARD ================= -->
+  <div id="studentView" class="hidden min-h-screen p-4 pb-24">
+    <div class="flex justify-between items-center mb-5">
+      <div>
+        <h1 class="text-xl font-bold text-white" id="studentWelcomeName">Welcome</h1>
+        <p class="text-xs text-slate-400">Coaching: <span id="studentEnrolledCode" class="text-blue-400 font-mono font-bold"></span></p>
+      </div>
+      <button onclick="logout()" class="p-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs">
+        <i class="fas fa-sign-out-alt"></i>
+      </button>
+    </div>
+
+    <div class="glass-card p-4 rounded-xl mb-5">
+      <span class="text-[11px] text-slate-400">Total Fees Paid</span>
+      <h3 class="text-2xl font-bold text-emerald-400 mt-1" id="studentTotalPaid">₹0</h3>
+    </div>
+
+    <!-- Receipts -->
+    <div class="glass-card p-4 rounded-xl">
+      <h3 class="text-sm font-semibold text-white mb-3">Payment Receipts</h3>
+      <div id="studentReceiptList" class="space-y-2 text-xs">
+        <p class="text-slate-500 italic py-2">No receipts issued yet.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= FEE MODAL ================= -->
+  <div id="feeModal" class="hidden fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 w-full max-w-xs p-5 rounded-2xl">
+      <h3 class="text-sm font-bold text-white mb-3">Collect Fee</h3>
+      <p class="text-xs text-slate-400 mb-3">Student: <span id="feeModalStudentName" class="text-white font-semibold"></span></p>
+      <div class="space-y-3">
+        <div>
+          <label class="text-[11px] text-slate-400">Amount (₹)</label>
+          <input type="number" id="feeInputAmount" placeholder="500" class="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-white focus:outline-none">
+        </div>
+        <div>
+          <label class="text-[11px] text-slate-400">Month / Remarks</label>
+          <input type="text" id="feeInputMonth" placeholder="November 2026" class="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-white focus:outline-none">
+        </div>
+      </div>
+      <div class="flex gap-2 mt-4">
+        <button onclick="submitFeePayment()" class="flex-1 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold">Submit & Generate</button>
+        <button onclick="closeFeeModal()" class="px-3 py-2 bg-slate-800 text-slate-400 rounded-lg text-xs">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= RECEIPT VIEW MODAL ================= -->
+  <div id="receiptModal" class="hidden fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
+    <div class="bg-white text-slate-900 rounded-2xl w-full max-w-xs p-5 shadow-2xl relative">
+      <div id="printableReceipt" class="p-3 border border-dashed border-slate-300 rounded-xl">
+        <div class="text-center pb-3 border-b border-slate-200">
+          <h2 class="text-base font-bold text-slate-900" id="rcptCoachingName">CoachingHub</h2>
+          <p class="text-[10px] text-slate-500">Official Payment Receipt</p>
+        </div>
+        <div class="py-3 space-y-1.5 text-[11px]">
+          <div class="flex justify-between"><span class="text-slate-500">Receipt No:</span><span class="font-mono font-bold" id="rcptNo"></span></div>
+          <div class="flex justify-between"><span class="text-slate-500">Date:</span><span id="rcptDate"></span></div>
+          <div class="flex justify-between"><span class="text-slate-500">Student:</span><span class="font-semibold" id="rcptStudent"></span></div>
+          <div class="flex justify-between"><span class="text-slate-500">Period:</span><span id="rcptMonth"></span></div>
+          <div class="flex justify-between items-center pt-2 border-t border-slate-200">
+            <span class="font-bold text-slate-700">Amount Paid:</span>
+            <span class="text-base font-extrabold text-emerald-600" id="rcptAmount"></span>
+          </div>
+        </div>
+        <p class="text-[9px] text-center text-slate-400 mt-2">Verified & Recorded Digitally</p>
+      </div>
+
+      <div class="flex gap-2 mt-4">
+        <button onclick="window.print()" class="flex-1 py-2 bg-slate-900 text-white rounded-lg text-xs font-semibold flex items-center justify-center gap-1">
+          <i class="fas fa-print"></i> Print/PDF
+        </button>
+        <button onclick="shareWhatsApp()" class="flex-1 py-2 bg-emerald-600 text-white rounded-lg text-xs font-semibold flex items-center justify-center gap-1">
+          <i class="fab fa-whatsapp"></i> WhatsApp
+        </button>
+      </div>
+      <button onclick="document.getElementById('receiptModal').classList.add('hidden')" class="w-full mt-2 py-1 text-xs text-slate-500">Close</button>
+    </div>
+  </div>
+
+  <!-- Firebase Scripts -->
   <script type="module">
-    // Firebase Modular SDK imports
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-    import { getFirestore, collection, addDoc, getDocs, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getFirestore, doc, setDoc, getDoc, collection, addDoc, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    // Standard Project Configuration (Auto-populated with user project ID)
     const firebaseConfig = {
       apiKey: "AIzaSyAWTAZP3RsKmmeCIrfXivRLlbBOobyM_TM",
-     
       authDomain: "coachinghub-b5b8a.firebaseapp.com",
       projectId: "coachinghub-b5b8a",
       storageBucket: "coachinghub-b5b8a.firebasestorage.app",
       messagingSenderId: "105015281885",
-      appId: localStorage.getItem('ch_appId') || "1:105015281885:web:76f2810d327local"
+      appId: "1:105015281885:web:76f2810d327de9d69a7334"
     };
 
-    // Firebase instance handles
-    let app, auth, db;
-    let isFirebaseReady = false;
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
 
-    // Try initializing Firebase
-    try {
-      app = initializeApp(firebaseConfig);
-      auth = getAuth(app);
-      db = getFirestore(app);
-      isFirebaseReady = true;
-      console.log("Firebase initialized successfully with project coachinghub-b5b8a");
-    } catch (e) {
-      console.warn("Using fallback memory storage until live keys are tested:", e);
-    }
+    let authMode = "login";
+    let activeStudentTarget = null;
+    let activeReceiptData = null;
 
-    // Local in-memory store matching the Firestore collections created
-    window.appData = {
-      users: [
-        { id: "6HQVzwlTvwVvrO1AKwOr", name: "Hamidul Islam", role: "Teacher", status: "Active" },
-        { id: "user_stu_1", name: "Rahul Roy", role: "Student", status: "Enrolled" }
-      ],
-      coachings: [
-        { id: "J288XGWVm7RVApwDlwne", name: "Bright Future Coaching", code: "HUB-781" }
-      ],
-      attendance: [
-        { id: "S9cqM8tfOM5RIXX2cER7", studentName: "Rahul Roy", status: "Present", date: "2026-11-21" }
-      ],
-      fees: [
-        { id: "pyOX9HkARjvxcary7XwL", studentName: "Rahul Roy", amount: 500, month: "November 2026", status: "Paid" }
-      ],
-      currentUser: null
+    window.switchAuthMode = (mode) => {
+      authMode = mode;
+      document.getElementById('authErrorMsg').innerText = "";
+      if (mode === "login") {
+        document.getElementById('tabLogin').className = "py-2 rounded-lg bg-blue-600 text-white";
+        document.getElementById('tabRegister').className = "py-2 rounded-lg text-slate-400";
+        document.getElementById('nameField').classList.add('hidden');
+        document.getElementById('btnAuthAction').innerText = "Sign In";
+        document.getElementById('studentCodeField').classList.add('hidden');
+      } else {
+        document.getElementById('tabRegister').className = "py-2 rounded-lg bg-blue-600 text-white";
+        document.getElementById('tabLogin').className = "py-2 rounded-lg text-slate-400";
+        document.getElementById('nameField').classList.remove('hidden');
+        document.getElementById('btnAuthAction').innerText = "Create Account";
+        toggleRoleFields();
+      }
     };
 
-    // Make Firebase services accessible globally for UI events
-    window.fbAuth = auth;
-    window.fbDb = db;
-    window.isFirebaseReady = isFirebaseReady;
-
-    // Initial render
-    window.renderTables = function() {
-      // 1. Users Table
-      const userBody = document.getElementById('users-table-body');
-      userBody.innerHTML = window.appData.users.map(u => `
-        <tr class="hover:bg-slate-750/50 transition">
-          <td class="px-5 py-3.5 font-medium text-white flex items-center gap-2">
-            <span class="w-7 h-7 rounded-full bg-slate-700 text-indigo-400 font-bold flex items-center justify-center text-xs">
-              ${u.name.charAt(0)}
-            </span>
-            ${u.name}
-          </td>
-          <td class="px-5 py-3.5">
-            <span class="px-2 py-0.5 rounded-full text-xs font-semibold ${u.role === 'Teacher' ? 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20' : 'bg-slate-700 text-slate-300'}">
-              ${u.role}
-            </span>
-          </td>
-          <td class="px-5 py-3.5 text-xs text-emerald-400 font-medium">● ${u.status || 'Active'}</td>
-          <td class="px-5 py-3.5 text-right text-xs">
-            <button class="text-slate-400 hover:text-indigo-400 transition" title="View Details"><i class="fa-solid fa-eye"></i></button>
-          </td>
-        </tr>
-      `).join('');
-
-      // 2. Attendance Table
-      const attBody = document.getElementById('attendance-table-body');
-      attBody.innerHTML = window.appData.attendance.map(a => `
-        <tr class="hover:bg-slate-750/50 transition">
-          <td class="px-5 py-3.5 font-medium text-white">${a.studentName}</td>
-          <td class="px-5 py-3.5 text-slate-300 font-mono text-xs">${a.date}</td>
-          <td class="px-5 py-3.5">
-            <span class="px-2.5 py-0.5 rounded-full text-xs font-medium ${
-              a.status === 'Present' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
-              a.status === 'Absent' ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20' : 'bg-amber-500/10 text-amber-400'
-            }">
-              ${a.status}
-            </span>
-          </td>
-          <td class="px-5 py-3.5 text-right text-xs text-slate-400">
-            <i class="fa-solid fa-circle-check text-emerald-400"></i> Logged
-          </td>
-        </tr>
-      `).join('');
-
-      // 3. Fees Table
-      const feesBody = document.getElementById('fees-table-body');
-      feesBody.innerHTML = window.appData.fees.map(f => `
-        <tr class="hover:bg-slate-750/50 transition">
-          <td class="px-5 py-3.5 font-medium text-white">${f.studentName}</td>
-          <td class="px-5 py-3.5 font-bold text-white font-mono">₹ ${f.amount}</td>
-          <td class="px-5 py-3.5 text-slate-300 text-xs">${f.month}</td>
-          <td class="px-5 py-3.5">
-            <span class="px-2.5 py-0.5 rounded-full text-xs font-medium ${
-              f.status === 'Paid' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
-            }">
-              ${f.status}
-            </span>
-          </td>
-          <td class="px-5 py-3.5 text-right text-xs">
-            <button onclick="showToast('Receipt #CH-${Math.floor(1000 + Math.random()*9000)} generated', 'success')" class="text-indigo-400 hover:text-indigo-300 underline font-medium">Download</button>
-          </td>
-        </tr>
-      `).join('');
-
-      // Update counters
-      document.getElementById('stat-students').innerText = window.appData.users.length;
-      document.getElementById('stat-attendance').innerText = window.appData.attendance.filter(x => x.status === 'Present').length + ' Present';
-      const totalAmount = window.appData.fees.reduce((sum, item) => sum + Number(item.amount || 0), 0);
-      document.getElementById('stat-fees').innerText = '₹ ' + totalAmount;
+    window.toggleRoleFields = () => {
+      if (authMode === "register") {
+        const role = document.getElementById('authRole').value;
+        if (role === "Student") {
+          document.getElementById('studentCodeField').classList.remove('hidden');
+        } else {
+          document.getElementById('studentCodeField').classList.add('hidden');
+        }
+      }
     };
 
-    // Firebase Auth Handler
-    window.handleAuth = async function(e) {
+    window.handleAuthSubmit = async (e) => {
       e.preventDefault();
-      const isLogin = !document.getElementById('tab-login').classList.contains('text-slate-400');
-      const email = document.getElementById('auth-email').value;
-      const pass = document.getElementById('auth-password').value;
+      const email = document.getElementById('authEmail').value.trim();
+      const password = document.getElementById('authPassword').value;
+      const role = document.getElementById('authRole').value;
+      const name = document.getElementById('authName').value.trim();
+      const errorMsg = document.getElementById('authErrorMsg');
+      errorMsg.innerText = "Please wait...";
 
       try {
-        if (window.isFirebaseReady && window.fbAuth) {
-          if (isLogin) {
-            const userCred = await signInWithEmailAndPassword(window.fbAuth, email, pass);
-            setupLoggedInUser(userCred.user.email, "Teacher / Admin");
-          } else {
-            const name = document.getElementById('auth-name').value || "User";
-            const role = document.getElementById('auth-role').value;
-            const userCred = await createUserWithEmailAndPassword(window.fbAuth, email, pass);
-            
-            // Add to firestore users collection
-            try {
-              await addDoc(collection(window.fbDb, "users"), {
-                name: name,
-                role: role,
-                email: email
-              });
-            } catch(err) {
-              console.log("Local collection stored", err);
-            }
+        if (authMode === "register") {
+          const userCred = await createUserWithEmailAndPassword(auth, email, password);
+          const uid = userCred.user.uid;
+          let coachingCode = "";
 
-            window.appData.users.push({ id: userCred.user.uid, name, role, status: "Active" });
-            setupLoggedInUser(name, role);
+          if (role === "Teacher / Admin") {
+            coachingCode = "HUB-" + Math.floor(100 + Math.random() * 900);
+          } else {
+            coachingCode = document.getElementById('authCoachingCode').value.trim().toUpperCase() || "HUB-781";
           }
-          showToast(isLogin ? "Signed in successfully!" : "Account created successfully!", "success");
+
+          await setDoc(doc(db, "users", uid), {
+            name: name || "User",
+            email,
+            role,
+            coachingCode,
+            createdAt: new Date().toISOString()
+          });
         } else {
-          // Fallback simulation mode
-          const name = isLogin ? "Hamidul Islam" : (document.getElementById('auth-name').value || "Teacher");
-          const role = isLogin ? "Teacher" : document.getElementById('auth-role').value;
-          setupLoggedInUser(name, role);
-          showToast(isLogin ? "Welcome back!" : "Account created successfully!", "success");
+          await signInWithEmailAndPassword(auth, email, password);
         }
       } catch (err) {
-        showToast(err.message || "Authentication error", "error");
-        // Fallback convenience option
-        setupLoggedInUser("Hamidul Islam", "Teacher");
+        errorMsg.innerText = err.message.replace("Firebase: ", "");
       }
     };
-  </script>
 
-  <!-- REGULAR JAVASCRIPT UI HANDLERS -->
-  <script>
-    // Set default date for attendance
-    window.addEventListener('load', () => {
-      const today = new Date().toISOString().split('T')[0];
-      const dateInput = document.getElementById('input-att-date');
-      if (dateInput) dateInput.value = today;
-      window.renderTables();
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        document.getElementById('authView').classList.add('hidden');
+        const userDoc = await getDoc(doc(db, "users", user.uid));
+        if (userDoc.exists()) {
+          const data = userDoc.data();
+          if (data.role === "Teacher / Admin") {
+            loadTeacherPanel(user.uid, data);
+          } else {
+            loadStudentPanel(user.uid, data);
+          }
+        }
+      } else {
+        document.getElementById('authView').classList.remove('hidden');
+        document.getElementById('teacherView').classList.add('hidden');
+        document.getElementById('studentView').classList.add('hidden');
+      }
     });
 
-    // Toast Notification helper (replaces alert)
-    function showToast(message, type = 'success') {
-      const toast = document.getElementById('toast');
-      const toastMsg = document.getElementById('toast-msg');
-      const toastIcon = document.getElementById('toast-icon');
-      
-      toastMsg.innerText = message;
-      if (type === 'error') {
-        toastIcon.className = "fa-solid fa-triangle-exclamation text-rose-400";
-      } else {
-        toastIcon.className = "fa-solid fa-circle-check text-emerald-400";
-      }
+    function loadTeacherPanel(uid, userData) {
+      document.getElementById('teacherView').classList.remove('hidden');
+      document.getElementById('teacherCoachingTitle').innerText = (userData.name || "My") + "'s Hub";
+      document.getElementById('teacherCodeBadge').innerText = userData.coachingCode || "HUB-781";
 
-      toast.classList.remove('translate-y-[-120%]', 'opacity-0');
-      toast.classList.add('translate-y-0', 'opacity-100');
-
-      setTimeout(() => {
-        toast.classList.add('translate-y-[-120%]', 'opacity-0');
-        toast.classList.remove('translate-y-0', 'opacity-100');
-      }, 3500);
-    }
-
-    // Switch between Sign in and Sign up
-    function switchAuthTab(type) {
-      const loginTab = document.getElementById('tab-login');
-      const signupTab = document.getElementById('tab-signup');
-      const signupFields = document.getElementById('signup-fields');
-      const authBtn = document.getElementById('auth-btn');
-
-      if (type === 'signup') {
-        signupTab.className = "flex-1 py-2 rounded-xl text-center transition-all bg-indigo-600 text-white shadow-md";
-        loginTab.className = "flex-1 py-2 rounded-xl text-center text-slate-400 hover:text-white transition-all";
-        signupFields.classList.remove('hidden');
-        authBtn.innerText = "Create Account";
-      } else {
-        loginTab.className = "flex-1 py-2 rounded-xl text-center transition-all bg-indigo-600 text-white shadow-md";
-        signupTab.className = "flex-1 py-2 rounded-xl text-center text-slate-400 hover:text-white transition-all";
-        signupFields.classList.add('hidden');
-        authBtn.innerText = "Sign In";
-      }
-    }
-
-    // Instant demo login bypass
-    function demoBypass() {
-      setupLoggedInUser("Hamidul Islam", "Teacher");
-      showToast("Signed in as Hamidul Islam (Teacher)", "success");
-    }
-
-    // Setup active state once user enters
-    function setupLoggedInUser(name, role) {
-      document.getElementById('auth-screen').classList.add('hidden');
-      document.getElementById('main-app').classList.remove('hidden');
-      
-      document.getElementById('user-display-name').innerText = name;
-      document.getElementById('user-display-role').innerText = role;
-      document.getElementById('user-avatar').innerText = name.charAt(0).toUpperCase();
-
-      window.renderTables();
-    }
-
-    // Sign out
-    function signOutUser() {
-      document.getElementById('main-app').classList.add('hidden');
-      document.getElementById('auth-screen').classList.remove('hidden');
-      showToast("Signed out successfully", "success");
-    }
-
-    // Switch Main Application Tabs
-    function setDashboardTab(tabId) {
-      const tabs = ['overview', 'students', 'attendance', 'fees', 'firebase-keys'];
-      tabs.forEach(t => {
-        const view = document.getElementById(`view-${t}`);
-        const nav = document.getElementById(`nav-${t}`);
-        if (t === tabId) {
-          view.classList.remove('hidden');
-          nav.className = "px-4 py-2 rounded-xl transition text-white bg-indigo-600 shadow flex items-center gap-2 whitespace-nowrap";
-        } else {
-          view.classList.add('hidden');
-          nav.className = "px-4 py-2 rounded-xl transition text-slate-400 hover:text-white hover:bg-slate-800 flex items-center gap-2 whitespace-nowrap";
+      const qStudents = query(collection(db, "users"), where("coachingCode", "==", userData.coachingCode), where("role", "==", "Student"));
+      onSnapshot(qStudents, (snap) => {
+        document.getElementById('statStudentCount').innerText = snap.docs.length;
+        const container = document.getElementById('teacherStudentList');
+        if (snap.empty) {
+          container.innerHTML = '<p class="text-slate-500 italic py-2">No students registered yet with code: ' + userData.coachingCode + '</p>';
+          return;
         }
+        container.innerHTML = snap.docs.map(docSnap => {
+          const s = docSnap.data();
+          return `
+            <div class="flex justify-between items-center p-2.5 bg-slate-800/80 rounded-xl">
+              <div>
+                <p class="font-semibold text-white">${s.name}</p>
+                <p class="text-[10px] text-slate-400">${s.email}</p>
+              </div>
+              <button onclick="openFeeModal('${docSnap.id}', '${s.name}', '${userData.coachingCode}')" class="px-2.5 py-1 bg-emerald-600/20 text-emerald-400 hover:bg-emerald-600 hover:text-white rounded-lg text-xs font-semibold">
+                + Collect Fee
+              </button>
+            </div>
+          `;
+        }).join('');
+      });
+
+      const qFees = query(collection(db, "fees"), where("coachingCode", "==", userData.coachingCode));
+      onSnapshot(qFees, (snap) => {
+        let total = 0;
+        snap.forEach(d => total += Number(d.data().amount || 0));
+        document.getElementById('statFeeTotal').innerText = "₹" + total;
       });
     }
 
-    // Modal toggles
-    function toggleStudentModal(open) {
-      document.getElementById('modal-student').classList.toggle('hidden', !open);
-    }
-    function toggleAttendanceModal(open) {
-      document.getElementById('modal-attendance').classList.toggle('hidden', !open);
-    }
-    function toggleFeesModal(open) {
-      document.getElementById('modal-fees').classList.toggle('hidden', !open);
-    }
+    function loadStudentPanel(uid, userData) {
+      document.getElementById('studentView').classList.remove('hidden');
+      document.getElementById('studentWelcomeName').innerText = "Hello, " + (userData.name || "Student");
+      document.getElementById('studentEnrolledCode').innerText = userData.coachingCode || "HUB-781";
 
-    // Add user record
-    function addUserRecord(e) {
-      e.preventDefault();
-      const name = document.getElementById('input-user-name').value;
-      const role = document.getElementById('input-user-role').value;
-      
-      window.appData.users.push({
-        id: "id_" + Date.now(),
-        name,
-        role,
-        status: "Active"
+      const qFees = query(collection(db, "fees"), where("studentId", "==", uid));
+      onSnapshot(qFees, (snap) => {
+        let total = 0;
+        const container = document.getElementById('studentReceiptList');
+        if (snap.empty) {
+          container.innerHTML = '<p class="text-slate-500 italic py-2">No payment receipts found.</p>';
+          document.getElementById('studentTotalPaid').innerText = "₹0";
+          return;
+        }
+        container.innerHTML = snap.docs.map(docSnap => {
+          const f = docSnap.data();
+          total += Number(f.amount || 0);
+          return `
+            <div class="flex justify-between items-center p-2.5 bg-slate-800/80 rounded-xl">
+              <div>
+                <p class="font-semibold text-white">₹${f.amount} - <span class="text-slate-400 font-normal">${f.month}</span></p>
+                <p class="text-[10px] text-slate-400">Date: ${f.date}</p>
+              </div>
+              <button onclick="displayReceipt('${f.receiptNo}', '${userData.name}', '${f.amount}', '${f.month}', '${f.date}', '${userData.coachingCode}')" class="px-2.5 py-1 bg-blue-600/20 text-blue-400 rounded-lg text-xs">
+                Receipt
+              </button>
+            </div>
+          `;
+        }).join('');
+        document.getElementById('studentTotalPaid').innerText = "₹" + total;
       });
-
-      window.renderTables();
-      toggleStudentModal(false);
-      showToast(`Added ${name} to users collection!`, "success");
-      e.target.reset();
     }
 
-    // Add attendance record
-    function addAttendanceRecord(e) {
-      e.preventDefault();
-      const studentName = document.getElementById('input-att-name').value;
-      const date = document.getElementById('input-att-date').value;
-      const status = document.getElementById('input-att-status').value;
+    window.openFeeModal = (studentId, studentName, coachingCode) => {
+      activeStudentTarget = { studentId, studentName, coachingCode };
+      document.getElementById('feeModalStudentName').innerText = studentName;
+      document.getElementById('feeInputAmount').value = "";
+      document.getElementById('feeInputMonth').value = new Date().toLocaleString('en-IN', { month: 'long', year: 'numeric' });
+      document.getElementById('feeModal').classList.remove('hidden');
+    };
 
-      window.appData.attendance.unshift({
-        id: "att_" + Date.now(),
-        studentName,
-        date,
-        status
-      });
+    window.closeFeeModal = () => {
+      document.getElementById('feeModal').classList.add('hidden');
+    };
 
-      window.renderTables();
-      toggleAttendanceModal(false);
-      showToast(`Attendance recorded for ${studentName}`, "success");
-      e.target.reset();
-    }
+    window.submitFeePayment = async () => {
+      const amount = document.getElementById('feeInputAmount').value;
+      const month = document.getElementById('feeInputMonth').value || "Current Month";
+      if (!amount || Number(amount) <= 0) return alert("Please enter valid amount");
 
-    // Add fee record
-    function addFeeRecord(e) {
-      e.preventDefault();
-      const studentName = document.getElementById('input-fee-name').value;
-      const amount = Number(document.getElementById('input-fee-amount').value);
-      const month = document.getElementById('input-fee-month').value;
-      const status = document.getElementById('input-fee-status').value;
+      const receiptNo = "RC-" + Math.floor(100000 + Math.random() * 900000);
+      const dateStr = new Date().toLocaleDateString('en-IN');
 
-      window.appData.fees.unshift({
-        id: "fee_" + Date.now(),
-        studentName,
-        amount,
+      await addDoc(collection(db, "fees"), {
+        studentId: activeStudentTarget.studentId,
+        studentName: activeStudentTarget.studentName,
+        coachingCode: activeStudentTarget.coachingCode,
+        amount: Number(amount),
         month,
-        status
+        date: dateStr,
+        receiptNo
       });
 
-      window.renderTables();
-      toggleFeesModal(false);
-      showToast(`Fee of ₹${amount} recorded for ${studentName}`, "success");
-      e.target.reset();
-    }
+      closeFeeModal();
+      displayReceipt(receiptNo, activeStudentTarget.studentName, amount, month, dateStr, activeStudentTarget.coachingCode);
+    };
 
-    // Save custom configuration from credentials tab
-    function saveCustomConfig() {
-      const apiKey = document.getElementById('cfg-apiKey').value;
-      const appId = document.getElementById('cfg-appId').value;
-      if (apiKey) localStorage.setItem('ch_apiKey', apiKey);
-      if (appId) localStorage.setItem('ch_appId', appId);
-      showToast("Config saved! Reload to test with your Firebase API keys.", "success");
-    }
+    window.displayReceipt = (receiptNo, studentName, amount, month, date, coachingCode) => {
+      activeReceiptData = { receiptNo, studentName, amount, month, date, coachingCode };
+      document.getElementById('rcptCoachingName').innerText = "Coaching (" + coachingCode + ")";
+      document.getElementById('rcptNo').innerText = receiptNo;
+      document.getElementById('rcptDate').innerText = date;
+      document.getElementById('rcptStudent').innerText = studentName;
+      document.getElementById('rcptMonth').innerText = month;
+      document.getElementById('rcptAmount').innerText = "₹" + amount;
+      document.getElementById('receiptModal').classList.remove('hidden');
+    };
 
-    // Prefill from Firebase Console
-    function loadSampleCredentials() {
-      document.getElementById('cfg-apiKey').value = "AIzaSyAWTAZP3RsKmmeCIrfXivRLLocalKeyPlaceholder";
-      document.getElementById('cfg-authDomain').value = "coachinghub-b5b8a.firebaseapp.com";
-      document.getElementById('cfg-projectId').value = "coachinghub-b5b8a";
-      document.getElementById('cfg-storageBucket').value = "coachinghub-b5b8a.firebasestorage.app";
-      document.getElementById('cfg-messagingSenderId').value = "105015281885";
-      document.getElementById('cfg-appId').value = "1:105015281885:web:76f2810d327";
-      showToast("Prefilled Project ID & IDs!", "success");
+    window.shareWhatsApp = () => {
+      if (!activeReceiptData) return;
+      const msg = `*Fee Receipt - CoachingHub*%0A*Receipt:* ${activeReceiptData.receiptNo}%0A*Student:* ${activeReceiptData.studentName}%0A*Amount:* ₹${activeReceiptData.amount}%0A*Period:* ${activeReceiptData.month}%0A*Date:* ${activeReceiptData.date}%0A%0APayment Verified ✅`;
+      window.open(`https://api.whatsapp.com/send?text=${msg}`, '_blank');
+    };
+
+    window.logout = () => signOut(auth);
+
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js');
     }
   </script>
 </body>
