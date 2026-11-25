@@ -3,193 +3,399 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CoachingHub</title>
+  <title>CoachingHub Pro</title>
   <link rel="manifest" href="manifest.json">
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- html2canvas for sealed un-editable receipts -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <style>
-    body { background-color: #0b1120; font-family: sans-serif; color: #f8fafc; }
-    .glass-card { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); }
-    @media print {
-      body * { visibility: hidden; }
-      #printableReceipt, #printableReceipt * { visibility: visible; }
-      #printableReceipt { position: absolute; left: 0; top: 0; width: 100%; border: none !important; }
-    }
+    body { background-color: #0b1120; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: #f8fafc; }
+    .glass-nav { background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255, 255, 255, 0.08); }
+    .glass-card { background: rgba(30, 41, 59, 0.65); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); }
+    .active-tab { background-color: #3b82f6 !important; color: #ffffff !important; box-shadow: 0 4px 14px 0 rgba(59, 130, 246, 0.4); }
+    .hide-scrollbar::-webkit-scrollbar { display: none; }
+    .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
   </style>
 </head>
-<body class="min-h-screen">
+<body class="min-h-screen flex flex-col justify-between">
 
   <!-- ================= AUTH VIEW ================= -->
   <div id="authView" class="p-4 flex flex-col items-center justify-center min-h-screen">
-    <div class="glass-card w-full max-w-sm p-6 rounded-2xl shadow-xl">
+    <div class="glass-card w-full max-w-sm p-6 rounded-3xl shadow-2xl">
       <div class="flex items-center gap-3 mb-6">
-        <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white text-lg">
+        <div class="w-12 h-12 bg-gradient-to-tr from-blue-600 to-indigo-500 rounded-2xl flex items-center justify-center text-white text-xl shadow-lg shadow-blue-500/30">
           <i class="fas fa-graduation-cap"></i>
         </div>
         <div>
-          <h1 class="text-xl font-bold text-white">CoachingHub</h1>
-          <p class="text-xs text-slate-400">Classroom & Institute Portal</p>
+          <h1 class="text-xl font-extrabold text-white tracking-tight">CoachingHub</h1>
+          <p class="text-xs text-slate-400">Classroom & Institute Pro</p>
         </div>
       </div>
 
-      <!-- Tabs -->
-      <div class="grid grid-cols-2 bg-slate-900/60 p-1 rounded-xl mb-4 text-xs font-semibold">
-        <button type="button" id="tabLogin" class="py-2 rounded-lg bg-blue-600 text-white">Sign In</button>
-        <button type="button" id="tabRegister" class="py-2 rounded-lg text-slate-400">Sign Up</button>
+      <!-- Auth Tabs -->
+      <div class="grid grid-cols-2 bg-slate-900/80 p-1.5 rounded-2xl mb-4 text-xs font-semibold">
+        <button type="button" id="tabLogin" class="py-2.5 rounded-xl bg-blue-600 text-white transition-all">Sign In</button>
+        <button type="button" id="tabRegister" class="py-2.5 rounded-xl text-slate-400 transition-all">Sign Up</button>
       </div>
 
       <form id="authForm" class="space-y-3">
         <div id="nameField" class="hidden">
-          <label class="text-[11px] text-slate-400">Full Name</label>
-          <input type="text" id="authName" class="w-full mt-1 px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-sm text-white focus:outline-none focus:border-blue-500">
+          <label class="text-[11px] font-medium text-slate-400">Full Name</label>
+          <input type="text" id="authName" placeholder="e.g. Hamidul Islam" class="w-full mt-1 px-3.5 py-2.5 bg-slate-900/90 border border-slate-700/80 rounded-xl text-sm text-white focus:outline-none focus:border-blue-500">
         </div>
 
         <div>
-          <label class="text-[11px] text-slate-400">Account Role</label>
-          <select id="authRole" class="w-full mt-1 px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-sm text-white focus:outline-none focus:border-blue-500">
+          <label class="text-[11px] font-medium text-slate-400">Account Role</label>
+          <select id="authRole" class="w-full mt-1 px-3.5 py-2.5 bg-slate-900/90 border border-slate-700/80 rounded-xl text-sm text-white focus:outline-none focus:border-blue-500">
             <option value="Teacher / Admin">Teacher / Admin</option>
             <option value="Student">Student</option>
           </select>
         </div>
 
         <div id="studentCodeField" class="hidden">
-          <label class="text-[11px] text-slate-400">Teacher's Coaching Code</label>
-          <input type="text" id="authCoachingCode" placeholder="e.g. HUB-781" class="w-full mt-1 px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-sm text-white focus:outline-none focus:border-blue-500 uppercase">
+          <label class="text-[11px] font-medium text-slate-400">Teacher's Coaching Code</label>
+          <input type="text" id="authCoachingCode" placeholder="e.g. HUB-781" class="w-full mt-1 px-3.5 py-2.5 bg-slate-900/90 border border-slate-700/80 rounded-xl text-sm text-white focus:outline-none focus:border-blue-500 uppercase font-mono tracking-wider">
         </div>
 
         <div>
-          <label class="text-[11px] text-slate-400">Email Address</label>
-          <input type="email" id="authEmail" required class="w-full mt-1 px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-sm text-white focus:outline-none focus:border-blue-500">
+          <label class="text-[11px] font-medium text-slate-400">Email Address</label>
+          <input type="email" id="authEmail" required placeholder="name@example.com" class="w-full mt-1 px-3.5 py-2.5 bg-slate-900/90 border border-slate-700/80 rounded-xl text-sm text-white focus:outline-none focus:border-blue-500">
         </div>
 
         <div>
-          <label class="text-[11px] text-slate-400">Password</label>
-          <input type="password" id="authPassword" required minlength="6" class="w-full mt-1 px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-sm text-white focus:outline-none focus:border-blue-500">
+          <label class="text-[11px] font-medium text-slate-400">Password</label>
+          <input type="password" id="authPassword" required minlength="6" placeholder="••••••••" class="w-full mt-1 px-3.5 py-2.5 bg-slate-900/90 border border-slate-700/80 rounded-xl text-sm text-white focus:outline-none focus:border-blue-500">
         </div>
 
-        <button type="submit" id="btnAuthAction" class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl text-sm transition">
+        <button type="submit" id="btnAuthAction" class="w-full mt-2 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-semibold rounded-xl text-sm shadow-lg shadow-blue-500/25 transition">
           Sign In
         </button>
       </form>
-      <p id="authErrorMsg" class="text-xs text-rose-400 text-center mt-3"></p>
+      <p id="authErrorMsg" class="text-xs text-rose-400 text-center mt-3 font-medium"></p>
     </div>
   </div>
 
-  <!-- ================= TEACHER DASHBOARD ================= -->
-  <div id="teacherView" class="hidden min-h-screen p-4 pb-24">
-    <div class="flex justify-between items-center mb-5">
-      <div>
-        <h1 class="text-xl font-bold text-white" id="teacherCoachingTitle">Teacher Portal</h1>
-        <p class="text-xs text-slate-400">Coaching Code: <span id="teacherCodeBadge" class="text-blue-400 font-mono font-bold"></span></p>
-      </div>
-      <button id="teacherLogoutBtn" class="p-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs">
-        <i class="fas fa-sign-out-alt"></i>
-      </button>
-    </div>
-
-    <div class="grid grid-cols-2 gap-3 mb-5">
-      <div class="glass-card p-4 rounded-xl">
-        <span class="text-[11px] text-slate-400">Enrolled Students</span>
-        <h3 class="text-2xl font-bold text-white mt-1" id="statStudentCount">0</h3>
-      </div>
-      <div class="glass-card p-4 rounded-xl">
-        <span class="text-[11px] text-slate-400">Fees Collected</span>
-        <h3 class="text-2xl font-bold text-emerald-400 mt-1" id="statFeeTotal">₹0</h3>
-      </div>
-    </div>
-
-    <div class="glass-card p-4 rounded-xl">
-      <h3 class="text-sm font-semibold text-white mb-3">Student Roster</h3>
-      <div id="teacherStudentList" class="space-y-2 text-xs">
-        <p class="text-slate-500 italic py-2">No students registered with this coaching code yet.</p>
-      </div>
-    </div>
-  </div>
-
-  <!-- ================= STUDENT DASHBOARD ================= -->
-  <div id="studentView" class="hidden min-h-screen p-4 pb-24">
-    <div class="flex justify-between items-center mb-5">
-      <div>
-        <h1 class="text-xl font-bold text-white" id="studentWelcomeName">Student Portal</h1>
-        <p class="text-xs text-slate-400">Coaching Code: <span id="studentEnrolledCode" class="text-blue-400 font-mono font-bold"></span></p>
-      </div>
-      <button id="studentLogoutBtn" class="p-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs">
-        <i class="fas fa-sign-out-alt"></i>
-      </button>
-    </div>
-
-    <div class="glass-card p-4 rounded-xl mb-5">
-      <span class="text-[11px] text-slate-400">Total Fees Paid</span>
-      <h3 class="text-2xl font-bold text-emerald-400 mt-1" id="studentTotalPaid">₹0</h3>
-    </div>
-
-    <div class="glass-card p-4 rounded-xl">
-      <h3 class="text-sm font-semibold text-white mb-3">Payment Receipts</h3>
-      <div id="studentReceiptList" class="space-y-2 text-xs">
-        <p class="text-slate-500 italic py-2">No receipts issued yet.</p>
-      </div>
-    </div>
-  </div>
-
-  <!-- ================= FEE MODAL ================= -->
-  <div id="feeModal" class="hidden fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
-    <div class="bg-slate-900 border border-slate-800 w-full max-w-xs p-5 rounded-2xl">
-      <h3 class="text-sm font-bold text-white mb-2">Collect Fee</h3>
-      <p class="text-xs text-slate-400 mb-3">Student: <span id="feeModalStudentName" class="text-white font-semibold"></span></p>
-      <div class="space-y-3">
-        <div>
-          <label class="text-[11px] text-slate-400">Amount (₹)</label>
-          <input type="number" id="feeInputAmount" placeholder="500" class="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-white focus:outline-none">
+  <!-- ================= APP CONTAINER ================= -->
+  <div id="appContainer" class="hidden min-h-screen flex flex-col justify-between">
+    <!-- Header -->
+    <header class="glass-nav sticky top-0 z-40 px-4 py-3 flex justify-between items-center">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center text-white text-base shadow">
+          <i class="fas fa-graduation-cap"></i>
         </div>
         <div>
-          <label class="text-[11px] text-slate-400">Month / Remarks</label>
-          <input type="text" id="feeInputMonth" placeholder="November 2026" class="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-white focus:outline-none">
+          <h1 class="text-base font-bold text-white leading-tight" id="headerTitle">CoachingHub</h1>
+          <p class="text-[10px] text-slate-400 flex items-center gap-1.5">
+            Code: <span id="headerCodeBadge" class="text-blue-400 font-mono font-bold">---</span>
+            <span id="roleBadge" class="px-1.5 py-0.2 text-[9px] bg-slate-800 text-slate-300 rounded-md">Role</span>
+          </p>
         </div>
       </div>
-      <div class="flex gap-2 mt-4">
-        <button id="submitFeeBtn" class="flex-1 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold">Submit & Generate</button>
-        <button id="cancelFeeBtn" class="px-3 py-2 bg-slate-800 text-slate-400 rounded-lg text-xs">Cancel</button>
+      <button id="btnLogout" class="w-9 h-9 flex items-center justify-center bg-slate-800/80 hover:bg-slate-700 text-slate-300 rounded-xl transition text-sm">
+        <i class="fas fa-sign-out-alt"></i>
+      </button>
+    </header>
+
+    <!-- Sub Navigation Tabs -->
+    <div class="px-3 pt-3 bg-slate-900/50 border-b border-slate-800/80">
+      <div class="flex gap-2 overflow-x-auto hide-scrollbar pb-2.5 text-xs font-medium">
+        <button data-tab="tab-overview" class="sub-tab px-3.5 py-2 rounded-xl active-tab whitespace-nowrap transition flex items-center gap-1.5">
+          <i class="fas fa-layer-group"></i> Overview
+        </button>
+        <button id="navStudentsBtn" data-tab="tab-students" class="sub-tab px-3.5 py-2 rounded-xl text-slate-400 hover:text-white bg-slate-800/60 whitespace-nowrap transition flex items-center gap-1.5">
+          <i class="fas fa-user-graduate"></i> Students & Staff
+        </button>
+        <button data-tab="tab-attendance" class="sub-tab px-3.5 py-2 rounded-xl text-slate-400 hover:text-white bg-slate-800/60 whitespace-nowrap transition flex items-center gap-1.5">
+          <i class="fas fa-calendar-check"></i> Attendance
+        </button>
+        <button data-tab="tab-fees" class="sub-tab px-3.5 py-2 rounded-xl text-slate-400 hover:text-white bg-slate-800/60 whitespace-nowrap transition flex items-center gap-1.5">
+          <i class="fas fa-receipt"></i> Fees
+        </button>
+        <button data-tab="tab-notes" class="sub-tab px-3.5 py-2 rounded-xl text-slate-400 hover:text-white bg-slate-800/60 whitespace-nowrap transition flex items-center gap-1.5">
+          <i class="fas fa-book-open"></i> Notes / PDF
+        </button>
+        <button data-tab="tab-quiz" class="sub-tab px-3.5 py-2 rounded-xl text-slate-400 hover:text-white bg-slate-800/60 whitespace-nowrap transition flex items-center gap-1.5">
+          <i class="fas fa-trophy"></i> Quiz & Ranks
+        </button>
       </div>
     </div>
-  </div>
 
-  <!-- ================= RECEIPT VIEW MODAL ================= -->
-  <div id="receiptModal" class="hidden fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
-    <div class="bg-white text-slate-900 rounded-2xl w-full max-w-xs p-5 shadow-2xl relative">
-      <div id="printableReceipt" class="p-3 border border-dashed border-slate-300 rounded-xl">
-        <div class="text-center pb-3 border-b border-slate-200">
-          <h2 class="text-base font-bold text-slate-900" id="rcptCoachingName">CoachingHub</h2>
-          <p class="text-[10px] text-slate-500">Official Payment Receipt</p>
-        </div>
-        <div class="py-3 space-y-1.5 text-[11px]">
-          <div class="flex justify-between"><span class="text-slate-500">Receipt No:</span><span class="font-mono font-bold" id="rcptNo"></span></div>
-          <div class="flex justify-between"><span class="text-slate-500">Date:</span><span id="rcptDate"></span></div>
-          <div class="flex justify-between"><span class="text-slate-500">Student:</span><span class="font-semibold" id="rcptStudent"></span></div>
-          <div class="flex justify-between"><span class="text-slate-500">Period:</span><span id="rcptMonth"></span></div>
-          <div class="flex justify-between items-center pt-2 border-t border-slate-200">
-            <span class="font-bold text-slate-700">Amount Paid:</span>
-            <span class="text-base font-extrabold text-emerald-600" id="rcptAmount"></span>
+    <!-- Main Content Tabs -->
+    <main class="flex-1 p-4 pb-20 space-y-4 max-w-lg mx-auto w-full">
+
+      <!-- ================= 1. OVERVIEW TAB ================= -->
+      <section id="tab-overview" class="tab-content space-y-4">
+        <!-- 4 Stat Cards -->
+        <div class="grid grid-cols-2 gap-3">
+          <div class="glass-card p-4 rounded-2xl">
+            <div class="flex justify-between items-center text-slate-400 text-xs">
+              <span>Active Students</span>
+              <i class="fas fa-users text-blue-400"></i>
+            </div>
+            <h3 class="text-2xl font-black text-white mt-2" id="statStudents">0</h3>
+            <p class="text-[10px] text-slate-500 mt-0.5">Approved</p>
+          </div>
+          <div class="glass-card p-4 rounded-2xl">
+            <div class="flex justify-between items-center text-slate-400 text-xs">
+              <span>Fees Total</span>
+              <i class="fas fa-wallet text-emerald-400"></i>
+            </div>
+            <h3 class="text-2xl font-black text-emerald-400 mt-2" id="statFees">₹0</h3>
+            <p class="text-[10px] text-slate-500 mt-0.5">Cash + UPI Total</p>
+          </div>
+          <div class="glass-card p-4 rounded-2xl">
+            <div class="flex justify-between items-center text-slate-400 text-xs">
+              <span>Today Present</span>
+              <i class="fas fa-check-circle text-teal-400"></i>
+            </div>
+            <h3 class="text-2xl font-black text-teal-400 mt-2" id="statTodayPresent">0</h3>
+            <p class="text-[10px] text-slate-500 mt-0.5" id="attendanceDateLabel">Live Session</p>
+          </div>
+          <div class="glass-card p-4 rounded-2xl">
+            <div class="flex justify-between items-center text-slate-400 text-xs">
+              <span>Top Rank</span>
+              <i class="fas fa-crown text-amber-400"></i>
+            </div>
+            <h3 class="text-2xl font-black text-amber-400 mt-2" id="statTopRank">--</h3>
+            <p class="text-[10px] text-slate-500 mt-0.5">Quiz Champion</p>
           </div>
         </div>
-        <p class="text-[9px] text-center text-slate-400 mt-2">Verified & Recorded Digitally</p>
-      </div>
 
-      <div class="flex gap-2 mt-4">
-        <button onclick="window.print()" class="flex-1 py-2 bg-slate-900 text-white rounded-lg text-xs font-semibold flex items-center justify-center gap-1">
-          <i class="fas fa-print"></i> Print/PDF
-        </button>
-        <button id="whatsAppShareBtn" class="flex-1 py-2 bg-emerald-600 text-white rounded-lg text-xs font-semibold flex items-center justify-center gap-1">
-          <i class="fab fa-whatsapp"></i> WhatsApp
-        </button>
+        <!-- Digital Notice Board -->
+        <div class="glass-card p-4 rounded-2xl border border-blue-500/30">
+          <div class="flex justify-between items-center mb-2">
+            <h3 class="text-xs font-bold text-blue-400 flex items-center gap-1.5">
+              <i class="fas fa-bullhorn"></i> Coaching Notice Board
+            </h3>
+            <button id="btnOpenNoticeModal" class="hidden px-2.5 py-1 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-[10px] font-semibold">
+              + Post Notice
+            </button>
+          </div>
+          <div id="noticeBoardList" class="space-y-2 text-xs">
+            <p class="text-slate-500 italic py-1">No announcements posted yet.</p>
+          </div>
+        </div>
+
+        <!-- Pending Approval Widget (Teacher Only) -->
+        <div id="pendingApprovalWidget" class="hidden glass-card p-4 rounded-2xl border border-amber-500/30">
+          <div class="flex justify-between items-center mb-3">
+            <h3 class="text-xs font-bold text-amber-400 flex items-center gap-1.5">
+              <i class="fas fa-user-clock"></i> Pending Join Requests
+            </h3>
+            <span class="text-[10px] bg-amber-500/20 text-amber-300 font-bold px-2 py-0.5 rounded-full" id="pendingCountBadge">0</span>
+          </div>
+          <div id="pendingList" class="space-y-2 text-xs">
+            <p class="text-slate-500 italic py-1">No pending student requests.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 2. STUDENTS & STAFF TAB ================= -->
+      <section id="tab-students" class="tab-content hidden space-y-4">
+        <div class="glass-card p-4 rounded-2xl">
+          <div class="flex justify-between items-center mb-3">
+            <h3 class="text-sm font-bold text-white">Enrolled Students Roster</h3>
+            <span class="text-[10px] text-slate-400 font-mono" id="rosterCount">0 Students</span>
+          </div>
+          <div id="activeStudentRoster" class="space-y-2 text-xs">
+            <p class="text-slate-500 italic py-3 text-center">No students approved yet.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 3. ATTENDANCE TAB ================= -->
+      <section id="tab-attendance" class="tab-content hidden space-y-4">
+        <div class="glass-card p-4 rounded-2xl">
+          <div class="flex justify-between items-center mb-3">
+            <h3 class="text-sm font-bold text-white">Daily Attendance</h3>
+            <input type="date" id="attendanceDatePicker" class="bg-slate-900 border border-slate-700 text-xs rounded-lg px-2.5 py-1 text-slate-300 focus:outline-none">
+          </div>
+          <p class="text-[11px] text-slate-400 mb-3">Mark attendance for active enrolled students.</p>
+          <div id="attendanceList" class="space-y-2 text-xs">
+            <p class="text-slate-500 italic py-3 text-center">No students available.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 4. FEES TAB ================= -->
+      <section id="tab-fees" class="tab-content hidden space-y-4">
+        <div class="glass-card p-4 rounded-2xl">
+          <div class="flex justify-between items-center mb-3">
+            <h3 class="text-sm font-bold text-white">Payment Receipts (Cash & UPI)</h3>
+            <span class="text-[10px] text-emerald-400 font-semibold" id="feesHistoryCount">0 Records</span>
+          </div>
+          <div id="feesList" class="space-y-2 text-xs">
+            <p class="text-slate-500 italic py-3 text-center">No fee transactions recorded yet.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 5. NOTES & PDF TAB ================= -->
+      <section id="tab-notes" class="tab-content hidden space-y-4">
+        <!-- Teacher: Upload/Share Notes -->
+        <div id="teacherNotesCard" class="hidden glass-card p-4 rounded-2xl space-y-3 border border-indigo-500/30">
+          <h3 class="text-xs font-bold text-indigo-400 flex items-center gap-1.5">
+            <i class="fas fa-file-upload"></i> Upload / Add Study Notes
+          </h3>
+          <input type="text" id="noteTitleInput" placeholder="Chapter / Topic Name (e.g. Science Ch-1 Notes)" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white focus:outline-none">
+          <input type="url" id="noteLinkInput" placeholder="Google Drive / PDF URL Link" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white focus:outline-none">
+          <button id="btnPublishNote" class="w-full py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold">
+            Post Study Material
+          </button>
+        </div>
+
+        <div class="glass-card p-4 rounded-2xl">
+          <h3 class="text-xs font-bold text-white mb-3 flex items-center gap-1.5">
+            <i class="fas fa-folder-open text-indigo-400"></i> Available PDFs & Reference Materials
+          </h3>
+          <div id="notesMaterialsList" class="space-y-2 text-xs">
+            <p class="text-slate-500 italic py-2 text-center">No study materials published yet.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 6. QUIZ & LEADERBOARD TAB ================= -->
+      <section id="tab-quiz" class="tab-content hidden space-y-4">
+        <!-- Teacher: Add Question -->
+        <div id="teacherQuizCreateCard" class="hidden glass-card p-4 rounded-2xl space-y-3 border border-blue-500/30">
+          <h3 class="text-xs font-bold text-blue-400 flex items-center gap-1.5">
+            <i class="fas fa-plus-circle"></i> Create New Quiz Question
+          </h3>
+          <input type="text" id="quizQuestionInput" placeholder="Enter Question text..." class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white focus:outline-none">
+          <div class="grid grid-cols-2 gap-2 text-xs">
+            <input type="text" id="optA" placeholder="Option A" class="px-3 py-1.5 bg-slate-900 border border-slate-700 rounded-lg text-white">
+            <input type="text" id="optB" placeholder="Option B" class="px-3 py-1.5 bg-slate-900 border border-slate-700 rounded-lg text-white">
+            <input type="text" id="optC" placeholder="Option C" class="px-3 py-1.5 bg-slate-900 border border-slate-700 rounded-lg text-white">
+            <input type="text" id="optD" placeholder="Option D" class="px-3 py-1.5 bg-slate-900 border border-slate-700 rounded-lg text-white">
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-[11px] text-slate-400">Correct:</span>
+            <select id="quizCorrectOpt" class="bg-slate-900 border border-slate-700 text-xs rounded-lg px-2 py-1 text-white">
+              <option value="A">A</option>
+              <option value="B">B</option>
+              <option value="C">C</option>
+              <option value="D">D</option>
+            </select>
+            <button id="btnPublishQuiz" class="ml-auto px-4 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-semibold">Publish Quiz</button>
+          </div>
+        </div>
+
+        <!-- Quiz List (for Students) -->
+        <div class="glass-card p-4 rounded-2xl space-y-3">
+          <h3 class="text-xs font-bold text-white flex items-center gap-1.5">
+            <i class="fas fa-question-circle text-blue-400"></i> Active Coaching Quizzes
+          </h3>
+          <div id="quizContentArea" class="text-xs space-y-2">
+            <p class="text-slate-500 italic py-2 text-center">No quiz questions active right now.</p>
+          </div>
+        </div>
+
+        <!-- Leaderboard -->
+        <div class="glass-card p-4 rounded-2xl">
+          <h3 class="text-xs font-bold text-amber-400 mb-3 flex items-center gap-1.5">
+            <i class="fas fa-trophy"></i> Institute Rank Leaderboard
+          </h3>
+          <div id="leaderboardList" class="space-y-2 text-xs">
+            <p class="text-slate-500 italic py-2 text-center">No quiz scores recorded yet.</p>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ================= COLLECT FEE MODAL (CASH & UPI) ================= -->
+  <div id="feeModal" class="hidden fixed inset-0 bg-black/85 z-50 flex items-center justify-center p-4">
+    <div class="glass-card bg-slate-900 border border-slate-700 w-full max-w-xs p-5 rounded-3xl shadow-2xl">
+      <h3 class="text-sm font-bold text-white mb-1">Record Fee Collection</h3>
+      <p class="text-xs text-slate-400 mb-3">Student: <span id="feeModalStudentName" class="text-blue-400 font-semibold"></span></p>
+      <div class="space-y-3">
+        <div>
+          <label class="text-[11px] text-slate-400 font-medium">Amount (₹)</label>
+          <input type="number" id="feeInputAmount" placeholder="500" class="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-sm text-white focus:outline-none">
+        </div>
+        <div>
+          <label class="text-[11px] text-slate-400 font-medium">Payment Mode</label>
+          <select id="feePaymentMode" class="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-sm text-white focus:outline-none">
+            <option value="UPI">UPI (Google Pay / PhonePe / Paytm)</option>
+            <option value="Cash">Cash (Physical Cash Payment)</option>
+          </select>
+        </div>
+        <div>
+          <label class="text-[11px] text-slate-400 font-medium">Session / Month</label>
+          <input type="text" id="feeInputMonth" placeholder="November 2026" class="w-full mt-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-sm text-white focus:outline-none">
+        </div>
       </div>
-      <button id="closeRcptBtn" class="w-full mt-2 py-1 text-xs text-slate-500">Close</button>
+      <div class="flex gap-2 mt-4">
+        <button id="btnSubmitFee" class="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-semibold shadow-lg shadow-emerald-600/30">Issue Receipt</button>
+        <button id="btnCancelFee" class="px-3.5 py-2.5 bg-slate-800 text-slate-400 rounded-xl text-xs">Cancel</button>
+      </div>
     </div>
   </div>
 
+  <!-- ================= NOTICE MODAL ================= -->
+  <div id="noticeModal" class="hidden fixed inset-0 bg-black/85 z-50 flex items-center justify-center p-4">
+    <div class="glass-card bg-slate-900 border border-slate-700 w-full max-w-xs p-5 rounded-3xl shadow-2xl">
+      <h3 class="text-sm font-bold text-white mb-3">Broadcast Notice</h3>
+      <textarea id="noticeTextInput" rows="3" placeholder="e.g. Sunday batch will start at 8:00 AM instead of 9:00 AM..." class="w-full p-3 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white focus:outline-none mb-3"></textarea>
+      <div class="flex gap-2">
+        <button id="btnSubmitNotice" class="flex-1 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-semibold">Post to All</button>
+        <button id="btnCancelNotice" class="px-3 py-2 bg-slate-800 text-slate-400 rounded-xl text-xs">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= PROFESSIONAL RECEIPT CARD MODAL ================= -->
+  <div id="receiptModal" class="hidden fixed inset-0 bg-black/85 z-50 flex items-center justify-center p-4">
+    <div class="bg-white text-slate-900 rounded-3xl w-full max-w-xs p-5 shadow-2xl relative">
+      <!-- High-Resolution Capture Element -->
+      <div id="captureReceiptCard" class="p-4 bg-gradient-to-b from-slate-50 to-white border-2 border-slate-200 rounded-2xl relative overflow-hidden">
+        <div class="flex justify-between items-start pb-3 border-b border-slate-200">
+          <div>
+            <h2 class="text-base font-extrabold text-slate-900" id="rcptInstituteName">CoachingHub</h2>
+            <p class="text-[10px] text-slate-500 font-mono" id="rcptCodeDisplay">Code: HUB-781</p>
+          </div>
+          <div class="text-right">
+            <span class="inline-block px-2.5 py-0.5 bg-emerald-100 text-emerald-800 font-black text-[9px] rounded-full uppercase tracking-wider">VERIFIED ✅</span>
+          </div>
+        </div>
+
+        <div class="py-3.5 space-y-2 text-xs">
+          <div class="flex justify-between"><span class="text-slate-500">Receipt No:</span><span class="font-mono font-bold text-slate-900" id="rcptNo"></span></div>
+          <div class="flex justify-between"><span class="text-slate-500">Date Issued:</span><span id="rcptDate" class="text-slate-700 font-medium"></span></div>
+          <div class="flex justify-between"><span class="text-slate-500">Student Name:</span><span id="rcptStudent" class="font-bold text-slate-900"></span></div>
+          <div class="flex justify-between"><span class="text-slate-500">Payment Mode:</span><span id="rcptModeBadge" class="font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded text-[10px]"></span></div>
+          <div class="flex justify-between"><span class="text-slate-500">Billing Period:</span><span id="rcptMonth" class="text-slate-700 font-medium"></span></div>
+          <div class="flex justify-between items-center pt-2.5 border-t border-slate-200">
+            <span class="font-bold text-slate-700">Amount Paid:</span>
+            <span class="text-lg font-black text-emerald-600" id="rcptAmount"></span>
+          </div>
+        </div>
+
+        <div class="pt-2 text-center border-t border-slate-100">
+          <p class="text-[9px] text-slate-400 font-medium">Digital Tamper-Proof Stamp • Official Institute Copy</p>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex gap-2 mt-4">
+        <button id="btnDownloadCard" class="flex-1 py-2.5 bg-slate-900 hover:bg-black text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-md">
+          <i class="fas fa-file-download"></i> Save Card
+        </button>
+        <button id="btnShareLockedWhatsApp" class="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-md shadow-emerald-600/30">
+          <i class="fab fa-whatsapp"></i> Share
+        </button>
+      </div>
+      <button id="btnCloseReceipt" class="w-full mt-2.5 py-1 text-xs text-slate-400 hover:text-slate-600 font-medium">Close</button>
+    </div>
+  </div>
+
+  <!-- Firebase Logic -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-    import { getFirestore, doc, setDoc, getDoc, collection, addDoc, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getFirestore, doc, setDoc, getDoc, updateDoc, collection, addDoc, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyAWTAZP3RsKmmeCIrfXivRLlbBOobyM_TM",
@@ -205,9 +411,11 @@
     const db = getFirestore(app);
 
     let authMode = "login";
-    let activeStudentTarget = null;
-    let activeReceiptData = null;
+    let currentUserData = null;
+    let activeFeeStudent = null;
+    let lastReceiptObj = null;
 
+    // Elements
     const tabLogin = document.getElementById('tabLogin');
     const tabRegister = document.getElementById('tabRegister');
     const nameField = document.getElementById('nameField');
@@ -215,11 +423,15 @@
     const authRole = document.getElementById('authRole');
     const btnAuthAction = document.getElementById('btnAuthAction');
     const authErrorMsg = document.getElementById('authErrorMsg');
+    const attendanceDatePicker = document.getElementById('attendanceDatePicker');
 
+    attendanceDatePicker.value = new Date().toISOString().split('T')[0];
+
+    // Auth Switching
     tabLogin.addEventListener('click', () => {
       authMode = "login";
-      tabLogin.className = "py-2 rounded-lg bg-blue-600 text-white";
-      tabRegister.className = "py-2 rounded-lg text-slate-400";
+      tabLogin.className = "py-2.5 rounded-xl bg-blue-600 text-white transition-all";
+      tabRegister.className = "py-2.5 rounded-xl text-slate-400 transition-all";
       nameField.classList.add('hidden');
       studentCodeField.classList.add('hidden');
       btnAuthAction.innerText = "Sign In";
@@ -228,8 +440,8 @@
 
     tabRegister.addEventListener('click', () => {
       authMode = "register";
-      tabRegister.className = "py-2 rounded-lg bg-blue-600 text-white";
-      tabLogin.className = "py-2 rounded-lg text-slate-400";
+      tabRegister.className = "py-2.5 rounded-xl bg-blue-600 text-white transition-all";
+      tabLogin.className = "py-2.5 rounded-xl text-slate-400 transition-all";
       nameField.classList.remove('hidden');
       btnAuthAction.innerText = "Create Account";
       authErrorMsg.innerText = "";
@@ -251,22 +463,29 @@
       const password = document.getElementById('authPassword').value;
       const role = authRole.value;
       const name = document.getElementById('authName').value.trim();
-      authErrorMsg.innerText = "Please wait...";
+      authErrorMsg.innerText = "Connecting...";
 
       try {
         if (authMode === "register") {
           const userCred = await createUserWithEmailAndPassword(auth, email, password);
           let coachingCode = "";
+          let status = "active";
+
           if (role === "Teacher / Admin") {
             coachingCode = "HUB-" + Math.floor(100 + Math.random() * 900);
+            status = "active";
           } else {
             coachingCode = document.getElementById('authCoachingCode').value.trim().toUpperCase() || "HUB-781";
+            status = "pending";
           }
+
           await setDoc(doc(db, "users", userCred.user.uid), {
-            name: name || "User",
+            name: name || "Member",
             email,
             role,
             coachingCode,
+            status,
+            quizScore: 0,
             createdAt: new Date().toISOString()
           });
         } else {
@@ -277,162 +496,529 @@
       }
     });
 
+    // Sub Tabs Click
+    document.querySelectorAll('.sub-tab').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.sub-tab').forEach(b => {
+          b.className = "sub-tab px-3.5 py-2 rounded-xl text-slate-400 hover:text-white bg-slate-800/60 whitespace-nowrap transition flex items-center gap-1.5";
+        });
+        btn.className = "sub-tab px-3.5 py-2 rounded-xl active-tab whitespace-nowrap transition flex items-center gap-1.5";
+
+        const target = btn.getAttribute('data-tab');
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+        document.getElementById(target).classList.remove('hidden');
+      });
+    });
+
+    // Auth State Monitor
     onAuthStateChanged(auth, async (user) => {
       if (user) {
         document.getElementById('authView').classList.add('hidden');
+        document.getElementById('appContainer').classList.remove('hidden');
+
         try {
           const userDoc = await getDoc(doc(db, "users", user.uid));
           if (userDoc.exists()) {
-            const data = userDoc.data();
-            if (data.role === "Student") {
-              loadStudentPanel(user.uid, data);
-            } else {
-              loadTeacherPanel(user.uid, data);
-            }
+            currentUserData = { uid: user.uid, ...userDoc.data() };
           } else {
-            loadTeacherPanel(user.uid, { name: user.email.split('@')[0], coachingCode: "HUB-781" });
+            currentUserData = { uid: user.uid, name: user.email.split('@')[0], role: "Teacher / Admin", coachingCode: "HUB-781", status: "active", quizScore: 0 };
           }
+          setupEnvironment();
         } catch (e) {
-          loadTeacherPanel(user.uid, { name: "Teacher", coachingCode: "HUB-781" });
+          currentUserData = { uid: user.uid, name: "Member", role: "Teacher / Admin", coachingCode: "HUB-781", status: "active", quizScore: 0 };
+          setupEnvironment();
         }
       } else {
         document.getElementById('authView').classList.remove('hidden');
-        document.getElementById('teacherView').classList.add('hidden');
-        document.getElementById('studentView').classList.add('hidden');
+        document.getElementById('appContainer').classList.add('hidden');
       }
     });
 
-    function loadTeacherPanel(uid, userData) {
-      document.getElementById('teacherView').classList.remove('hidden');
-      document.getElementById('teacherCoachingTitle').innerText = (userData.name || "Teacher") + "'s Hub";
-      document.getElementById('teacherCodeBadge').innerText = userData.coachingCode || "HUB-781";
+    function setupEnvironment() {
+      document.getElementById('headerTitle').innerText = currentUserData.name + "'s Hub";
+      document.getElementById('headerCodeBadge').innerText = currentUserData.coachingCode || "HUB-781";
+      document.getElementById('roleBadge').innerText = currentUserData.role;
 
-      const qStudents = query(collection(db, "users"), where("coachingCode", "==", userData.coachingCode), where("role", "==", "Student"));
-      onSnapshot(qStudents, (snap) => {
-        document.getElementById('statStudentCount').innerText = snap.docs.length;
-        const container = document.getElementById('teacherStudentList');
+      if (currentUserData.role === "Teacher / Admin") {
+        document.getElementById('pendingApprovalWidget').classList.remove('hidden');
+        document.getElementById('teacherQuizCreateCard').classList.remove('hidden');
+        document.getElementById('teacherNotesCard').classList.remove('hidden');
+        document.getElementById('btnOpenNoticeModal').classList.remove('hidden');
+        document.getElementById('navStudentsBtn').classList.remove('hidden');
+        loadTeacherFeatures();
+      } else {
+        document.getElementById('pendingApprovalWidget').classList.add('hidden');
+        document.getElementById('teacherQuizCreateCard').classList.add('hidden');
+        document.getElementById('teacherNotesCard').classList.add('hidden');
+        document.getElementById('btnOpenNoticeModal').classList.add('hidden');
+        document.getElementById('navStudentsBtn').classList.add('hidden');
+        loadStudentFeatures();
+      }
+
+      loadAttendance();
+      loadNoticeBoard();
+      loadNotes();
+      loadQuizAndLeaderboard();
+    }
+
+    // Teacher Features
+    function loadTeacherFeatures() {
+      // 1. Pending Approvals
+      const qPending = query(collection(db, "users"), where("coachingCode", "==", currentUserData.coachingCode), where("status", "==", "pending"));
+      onSnapshot(qPending, (snap) => {
+        document.getElementById('pendingCountBadge').innerText = snap.docs.length;
+        const container = document.getElementById('pendingList');
         if (snap.empty) {
-          container.innerHTML = '<p class="text-slate-500 italic py-2">No students registered yet with code: ' + userData.coachingCode + '</p>';
+          container.innerHTML = '<p class="text-slate-500 italic py-1">No pending student requests.</p>';
           return;
         }
         container.innerHTML = "";
-        snap.forEach(docSnap => {
-          const s = docSnap.data();
-          const div = document.createElement('div');
-          div.className = "flex justify-between items-center p-2.5 bg-slate-800/80 rounded-xl";
-          div.innerHTML = `
+        snap.forEach(d => {
+          const u = d.data();
+          const row = document.createElement('div');
+          row.className = "flex justify-between items-center p-2.5 bg-slate-900/90 rounded-xl border border-slate-800";
+          row.innerHTML = `
             <div>
-              <p class="font-semibold text-white">${s.name}</p>
-              <p class="text-[10px] text-slate-400">${s.email}</p>
+              <p class="font-semibold text-white">${u.name}</p>
+              <p class="text-[10px] text-slate-400">${u.email}</p>
             </div>
-            <button class="px-2.5 py-1 bg-emerald-600/20 text-emerald-400 hover:bg-emerald-600 hover:text-white rounded-lg text-xs font-semibold">
+            <button class="px-3 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-semibold shadow">
+              Approve
+            </button>
+          `;
+          row.querySelector('button').addEventListener('click', async () => {
+            await updateDoc(doc(db, "users", d.id), { status: "active" });
+          });
+          container.appendChild(row);
+        });
+      });
+
+      // 2. Active Students
+      const qActive = query(collection(db, "users"), where("coachingCode", "==", currentUserData.coachingCode), where("status", "==", "active"), where("role", "==", "Student"));
+      onSnapshot(qActive, (snap) => {
+        document.getElementById('statStudents').innerText = snap.docs.length;
+        document.getElementById('rosterCount').innerText = snap.docs.length + " Students";
+        const container = document.getElementById('activeStudentRoster');
+        if (snap.empty) {
+          container.innerHTML = '<p class="text-slate-500 italic py-3 text-center">No students approved yet.</p>';
+          return;
+        }
+        container.innerHTML = "";
+        snap.forEach(d => {
+          const s = d.data();
+          const row = document.createElement('div');
+          row.className = "flex justify-between items-center p-3 bg-slate-800/80 rounded-2xl border border-slate-700/60";
+          row.innerHTML = `
+            <div class="flex items-center gap-2.5">
+              <div class="w-8 h-8 rounded-full bg-blue-600/30 text-blue-400 font-bold flex items-center justify-center text-xs">
+                ${(s.name || 'S').charAt(0)}
+              </div>
+              <div>
+                <p class="font-bold text-white text-xs">${s.name}</p>
+                <p class="text-[10px] text-slate-400">${s.email}</p>
+              </div>
+            </div>
+            <button class="px-3 py-1.5 bg-emerald-600/20 text-emerald-400 hover:bg-emerald-600 hover:text-white rounded-xl text-xs font-semibold transition">
               + Collect Fee
             </button>
           `;
-          div.querySelector('button').addEventListener('click', () => {
-            activeStudentTarget = { studentId: docSnap.id, studentName: s.name, coachingCode: userData.coachingCode };
+          row.querySelector('button').addEventListener('click', () => {
+            activeFeeStudent = { id: d.id, name: s.name, coachingCode: currentUserData.coachingCode };
             document.getElementById('feeModalStudentName').innerText = s.name;
             document.getElementById('feeInputAmount').value = "";
             document.getElementById('feeInputMonth').value = new Date().toLocaleString('en-IN', { month: 'long', year: 'numeric' });
             document.getElementById('feeModal').classList.remove('hidden');
           });
-          container.appendChild(div);
+          container.appendChild(row);
         });
       });
 
-      const qFees = query(collection(db, "fees"), where("coachingCode", "==", userData.coachingCode));
+      // 3. Fees Recorded
+      const qFees = query(collection(db, "fees"), where("coachingCode", "==", currentUserData.coachingCode));
       onSnapshot(qFees, (snap) => {
         let total = 0;
-        snap.forEach(d => total += Number(d.data().amount || 0));
-        document.getElementById('statFeeTotal').innerText = "₹" + total;
-      });
-    }
-
-    function loadStudentPanel(uid, userData) {
-      document.getElementById('studentView').classList.remove('hidden');
-      document.getElementById('studentWelcomeName').innerText = "Hello, " + (userData.name || "Student");
-      document.getElementById('studentEnrolledCode').innerText = userData.coachingCode || "HUB-781";
-
-      const qFees = query(collection(db, "fees"), where("studentId", "==", uid));
-      onSnapshot(qFees, (snap) => {
-        let total = 0;
-        const container = document.getElementById('studentReceiptList');
+        document.getElementById('feesHistoryCount').innerText = snap.docs.length + " Records";
+        const container = document.getElementById('feesList');
         if (snap.empty) {
-          container.innerHTML = '<p class="text-slate-500 italic py-2">No payment receipts found.</p>';
-          document.getElementById('studentTotalPaid').innerText = "₹0";
+          container.innerHTML = '<p class="text-slate-500 italic py-3 text-center">No fee transactions recorded yet.</p>';
+          document.getElementById('statFees').innerText = "₹0";
           return;
         }
         container.innerHTML = "";
-        snap.forEach(docSnap => {
-          const f = docSnap.data();
+        snap.forEach(d => {
+          const f = d.data();
           total += Number(f.amount || 0);
-          const div = document.createElement('div');
-          div.className = "flex justify-between items-center p-2.5 bg-slate-800/80 rounded-xl";
-          div.innerHTML = `
+          const row = document.createElement('div');
+          row.className = "flex justify-between items-center p-3 bg-slate-800/80 rounded-2xl";
+          row.innerHTML = `
             <div>
-              <p class="font-semibold text-white">₹${f.amount} - <span class="text-slate-400 font-normal">${f.month}</span></p>
-              <p class="text-[10px] text-slate-400">Date: ${f.date}</p>
+              <p class="font-bold text-white">₹${f.amount} <span class="text-slate-400 font-normal text-[11px]">- ${f.studentName}</span></p>
+              <p class="text-[10px] text-slate-400 font-mono">${f.receiptNo} • <span class="text-blue-400 font-semibold">${f.mode || 'Cash'}</span> • ${f.date}</p>
             </div>
-            <button class="px-2.5 py-1 bg-blue-600/20 text-blue-400 rounded-lg text-xs">Receipt</button>
+            <button class="px-2.5 py-1 bg-blue-600/20 text-blue-400 rounded-lg text-xs font-medium">Receipt</button>
           `;
-          div.querySelector('button').addEventListener('click', () => {
-            showReceiptModal(f.receiptNo, userData.name, f.amount, f.month, f.date, userData.coachingCode);
-          });
-          container.appendChild(div);
+          row.querySelector('button').addEventListener('click', () => openReceiptPopup(f));
+          container.appendChild(row);
         });
-        document.getElementById('studentTotalPaid').innerText = "₹" + total;
+        document.getElementById('statFees').innerText = "₹" + total;
       });
     }
 
-    document.getElementById('cancelFeeBtn').addEventListener('click', () => {
+    // Student Features
+    function loadStudentFeatures() {
+      const qFees = query(collection(db, "fees"), where("studentId", "==", currentUserData.uid));
+      onSnapshot(qFees, (snap) => {
+        let total = 0;
+        const container = document.getElementById('feesList');
+        if (snap.empty) {
+          container.innerHTML = '<p class="text-slate-500 italic py-3 text-center">No fee transactions found for your account.</p>';
+          document.getElementById('statFees').innerText = "₹0";
+          return;
+        }
+        container.innerHTML = "";
+        snap.forEach(d => {
+          const f = d.data();
+          total += Number(f.amount || 0);
+          const row = document.createElement('div');
+          row.className = "flex justify-between items-center p-3 bg-slate-800/80 rounded-2xl";
+          row.innerHTML = `
+            <div>
+              <p class="font-bold text-emerald-400">₹${f.amount} <span class="text-slate-300 font-normal text-[11px]">(${f.month})</span></p>
+              <p class="text-[10px] text-slate-400 font-mono">${f.receiptNo} • Mode: ${f.mode || 'Cash'}</p>
+            </div>
+            <button class="px-2.5 py-1 bg-blue-600/20 text-blue-400 rounded-lg text-xs font-medium">Receipt</button>
+          `;
+          row.querySelector('button').addEventListener('click', () => openReceiptPopup(f));
+          container.appendChild(row);
+        });
+        document.getElementById('statFees').innerText = "₹" + total;
+      });
+    }
+
+    // Daily Attendance
+    function loadAttendance() {
+      const dateVal = attendanceDatePicker.value;
+      const qAtt = query(collection(db, "attendance"), where("coachingCode", "==", currentUserData.coachingCode), where("date", "==", dateVal));
+      
+      onSnapshot(qAtt, (snap) => {
+        let presentCount = 0;
+        const recorded = {};
+        snap.forEach(d => {
+          recorded[d.data().studentId] = d.data().status;
+          if (d.data().status === "Present") presentCount++;
+        });
+
+        document.getElementById('statTodayPresent').innerText = presentCount;
+
+        const qStudents = query(collection(db, "users"), where("coachingCode", "==", currentUserData.coachingCode), where("status", "==", "active"), where("role", "==", "Student"));
+        onSnapshot(qStudents, (sSnap) => {
+          const container = document.getElementById('attendanceList');
+          if (sSnap.empty) {
+            container.innerHTML = '<p class="text-slate-500 italic py-3 text-center">No students registered yet.</p>';
+            return;
+          }
+          container.innerHTML = "";
+          sSnap.forEach(sDoc => {
+            const s = sDoc.data();
+            const currStatus = recorded[sDoc.id] || "Unmarked";
+            const row = document.createElement('div');
+            row.className = "flex justify-between items-center p-3 bg-slate-800/80 rounded-2xl";
+            row.innerHTML = `
+              <div>
+                <p class="font-semibold text-white text-xs">${s.name}</p>
+                <p class="text-[10px] ${currStatus === 'Present' ? 'text-teal-400' : (currStatus === 'Absent' ? 'text-rose-400' : 'text-slate-400')} font-medium">${currStatus}</p>
+              </div>
+              ${currentUserData.role === 'Teacher / Admin' ? `
+                <div class="flex gap-1.5">
+                  <button class="btn-pres px-2.5 py-1 ${currStatus === 'Present' ? 'bg-teal-600 text-white' : 'bg-slate-700 text-slate-300'} rounded-lg text-xs font-semibold">P</button>
+                  <button class="btn-abs px-2.5 py-1 ${currStatus === 'Absent' ? 'bg-rose-600 text-white' : 'bg-slate-700 text-slate-300'} rounded-lg text-xs font-semibold">A</button>
+                </div>
+              ` : `<span class="px-2 py-0.5 rounded text-xs ${currStatus === 'Present' ? 'bg-teal-900/50 text-teal-400' : 'bg-slate-800 text-slate-400'}">${currStatus}</span>`}
+            `;
+
+            if (currentUserData.role === 'Teacher / Admin') {
+              row.querySelector('.btn-pres').addEventListener('click', () => markAtt(sDoc.id, s.name, 'Present'));
+              row.querySelector('.btn-abs').addEventListener('click', () => markAtt(sDoc.id, s.name, 'Absent'));
+            }
+            container.appendChild(row);
+          });
+        });
+      });
+    }
+
+    attendanceDatePicker.addEventListener('change', loadAttendance);
+
+    async function markAtt(studentId, studentName, status) {
+      const dateVal = attendanceDatePicker.value;
+      await setDoc(doc(db, "attendance", `${studentId}_${dateVal}`), {
+        studentId,
+        studentName,
+        status,
+        date: dateVal,
+        coachingCode: currentUserData.coachingCode
+      });
+    }
+
+    // Fee Submission with Mode (Cash / UPI)
+    document.getElementById('btnCancelFee').addEventListener('click', () => {
       document.getElementById('feeModal').classList.add('hidden');
     });
 
-    document.getElementById('submitFeeBtn').addEventListener('click', async () => {
+    document.getElementById('btnSubmitFee').addEventListener('click', async () => {
       const amount = document.getElementById('feeInputAmount').value;
-      const month = document.getElementById('feeInputMonth').value || "Current Month";
+      const mode = document.getElementById('feePaymentMode').value;
+      const month = document.getElementById('feeInputMonth').value || "Current Session";
       if (!amount || Number(amount) <= 0) return alert("Please enter valid amount");
 
       const receiptNo = "RC-" + Math.floor(100000 + Math.random() * 900000);
       const dateStr = new Date().toLocaleDateString('en-IN');
 
-      await addDoc(collection(db, "fees"), {
-        studentId: activeStudentTarget.studentId,
-        studentName: activeStudentTarget.studentName,
-        coachingCode: activeStudentTarget.coachingCode,
+      const feeRecord = {
+        studentId: activeFeeStudent.id,
+        studentName: activeFeeStudent.name,
+        coachingCode: activeFeeStudent.coachingCode,
         amount: Number(amount),
+        mode,
         month,
         date: dateStr,
         receiptNo
-      });
+      };
 
+      await addDoc(collection(db, "fees"), feeRecord);
       document.getElementById('feeModal').classList.add('hidden');
-      showReceiptModal(receiptNo, activeStudentTarget.studentName, amount, month, dateStr, activeStudentTarget.coachingCode);
+      openReceiptPopup(feeRecord);
     });
 
-    function showReceiptModal(receiptNo, studentName, amount, month, date, coachingCode) {
-      activeReceiptData = { receiptNo, studentName, amount, month, date, coachingCode };
-      document.getElementById('rcptCoachingName').innerText = "Coaching (" + coachingCode + ")";
-      document.getElementById('rcptNo').innerText = receiptNo;
-      document.getElementById('rcptDate').innerText = date;
-      document.getElementById('rcptStudent').innerText = studentName;
-      document.getElementById('rcptMonth').innerText = month;
-      document.getElementById('rcptAmount').innerText = "₹" + amount;
+    // Tamper-Proof Receipt Popup
+    function openReceiptPopup(record) {
+      lastReceiptObj = record;
+      document.getElementById('rcptInstituteName').innerText = (currentUserData.name || "Coaching") + " Academy";
+      document.getElementById('rcptCodeDisplay').innerText = "Code: " + record.coachingCode;
+      document.getElementById('rcptNo').innerText = record.receiptNo;
+      document.getElementById('rcptDate').innerText = record.date;
+      document.getElementById('rcptStudent').innerText = record.studentName;
+      document.getElementById('rcptModeBadge').innerText = "Mode: " + (record.mode || "Cash");
+      document.getElementById('rcptMonth').innerText = record.month;
+      document.getElementById('rcptAmount').innerText = "₹" + record.amount;
       document.getElementById('receiptModal').classList.remove('hidden');
     }
 
-    document.getElementById('closeRcptBtn').addEventListener('click', () => {
+    document.getElementById('btnCloseReceipt').addEventListener('click', () => {
       document.getElementById('receiptModal').classList.add('hidden');
     });
 
-    document.getElementById('whatsAppShareBtn').addEventListener('click', () => {
-      if (!activeReceiptData) return;
-      const msg = `*Fee Receipt - CoachingHub*%0A*Receipt:* ${activeReceiptData.receiptNo}%0A*Student:* ${activeReceiptData.studentName}%0A*Amount:* ₹${activeReceiptData.amount}%0A*Period:* ${activeReceiptData.month}%0A*Date:* ${activeReceiptData.date}%0A%0APayment Verified ✅`;
-      window.open(`https://api.whatsapp.com/send?text=${msg}`, '_blank');
+    // Save as Image / Locked Card
+    document.getElementById('btnDownloadCard').addEventListener('click', () => {
+      const card = document.getElementById('captureReceiptCard');
+      html2canvas(card, { scale: 3 }).then(canvas => {
+        const link = document.createElement('a');
+        link.download = `Receipt_${lastReceiptObj.receiptNo}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+      });
     });
 
-    document.getElementById('teacherLogoutBtn').addEventListener('click', () => signOut(auth));
-    document.getElementById('studentLogoutBtn').addEventListener('click', () => signOut(auth));
+    // Share un-editable details on WhatsApp
+    document.getElementById('btnShareLockedWhatsApp').addEventListener('click', () => {
+      if (!lastReceiptObj) return;
+      const text = `*OFFICIAL FEE RECEIPT - COACHINGHUB*%0A--------------------------------%0A*Receipt No:* ${lastReceiptObj.receiptNo}%0A*Institute Code:* ${lastReceiptObj.coachingCode}%0A*Student:* ${lastReceiptObj.studentName}%0A*Billing Period:* ${lastReceiptObj.month}%0A*Amount Paid:* ₹${lastReceiptObj.amount}%0A*Payment Mode:* ${lastReceiptObj.mode || 'Cash'}%0A*Issued On:* ${lastReceiptObj.date}%0A*Status:* VERIFIED & PAID ✅%0A--------------------------------%0A_Digital system-generated locked record._`;
+      window.open(`https://api.whatsapp.com/send?text=${text}`, '_blank');
+    });
+
+    // Notice Board Module
+    function loadNoticeBoard() {
+      const qNotice = query(collection(db, "notices"), where("coachingCode", "==", currentUserData.coachingCode));
+      onSnapshot(qNotice, (snap) => {
+        const container = document.getElementById('noticeBoardList');
+        if (snap.empty) {
+          container.innerHTML = '<p class="text-slate-500 italic py-1">No announcements posted yet.</p>';
+          return;
+        }
+        container.innerHTML = "";
+        snap.forEach(d => {
+          const n = d.data();
+          const div = document.createElement('div');
+          div.className = "p-2.5 bg-slate-900/90 rounded-xl border border-slate-800 text-xs";
+          div.innerHTML = `
+            <p class="text-slate-200">${n.text}</p>
+            <p class="text-[9px] text-slate-500 mt-1 font-mono">${n.date}</p>
+          `;
+          container.appendChild(div);
+        });
+      });
+    }
+
+    const btnOpenNotice = document.getElementById('btnOpenNoticeModal');
+    if (btnOpenNotice) {
+      btnOpenNotice.addEventListener('click', () => document.getElementById('noticeModal').classList.remove('hidden'));
+    }
+    document.getElementById('btnCancelNotice').addEventListener('click', () => document.getElementById('noticeModal').classList.add('hidden'));
+
+    document.getElementById('btnSubmitNotice').addEventListener('click', async () => {
+      const text = document.getElementById('noticeTextInput').value.trim();
+      if (!text) return alert("Notice text cannot be empty");
+
+      await addDoc(collection(db, "notices"), {
+        coachingCode: currentUserData.coachingCode,
+        text,
+        date: new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
+      });
+
+      document.getElementById('noticeTextInput').value = "";
+      document.getElementById('noticeModal').classList.add('hidden');
+    });
+
+    // Notes / PDF Section
+    function loadNotes() {
+      const btnPubNote = document.getElementById('btnPublishNote');
+      if (btnPubNote) {
+        btnPubNote.addEventListener('click', async () => {
+          const title = document.getElementById('noteTitleInput').value.trim();
+          const link = document.getElementById('noteLinkInput').value.trim();
+          if (!title || !link) return alert("Please fill chapter title and link");
+
+          await addDoc(collection(db, "notes"), {
+            coachingCode: currentUserData.coachingCode,
+            title,
+            link,
+            date: new Date().toLocaleDateString('en-IN')
+          });
+
+          document.getElementById('noteTitleInput').value = "";
+          document.getElementById('noteLinkInput').value = "";
+          alert("Notes posted for students!");
+        });
+      }
+
+      const qNotes = query(collection(db, "notes"), where("coachingCode", "==", currentUserData.coachingCode));
+      onSnapshot(qNotes, (snap) => {
+        const container = document.getElementById('notesMaterialsList');
+        if (snap.empty) {
+          container.innerHTML = '<p class="text-slate-500 italic py-2 text-center">No study materials published yet.</p>';
+          return;
+        }
+        container.innerHTML = "";
+        snap.forEach(d => {
+          const n = d.data();
+          const div = document.createElement('div');
+          div.className = "flex justify-between items-center p-3 bg-slate-800/80 rounded-2xl";
+          div.innerHTML = `
+            <div>
+              <p class="font-bold text-white text-xs">${n.title}</p>
+              <p class="text-[10px] text-slate-400 font-mono">${n.date}</p>
+            </div>
+            <a href="${n.link}" target="_blank" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold flex items-center gap-1">
+              <i class="fas fa-external-link-alt"></i> Open PDF
+            </a>
+          `;
+          container.appendChild(div);
+        });
+      });
+    }
+
+    // Quiz & Leaderboard Module
+    function loadQuizAndLeaderboard() {
+      const btnPub = document.getElementById('btnPublishQuiz');
+      if (btnPub) {
+        btnPub.addEventListener('click', async () => {
+          const qText = document.getElementById('quizQuestionInput').value.trim();
+          const optA = document.getElementById('optA').value.trim();
+          const optB = document.getElementById('optB').value.trim();
+          const optC = document.getElementById('optC').value.trim();
+          const optD = document.getElementById('optD').value.trim();
+          const correct = document.getElementById('quizCorrectOpt').value;
+
+          if (!qText || !optA || !optB) return alert("Please fill question and choices");
+
+          await addDoc(collection(db, "quizzes"), {
+            coachingCode: currentUserData.coachingCode,
+            question: qText,
+            options: { A: optA, B: optB, C: optC, D: optD },
+            correct,
+            createdAt: new Date().toISOString()
+          });
+
+          document.getElementById('quizQuestionInput').value = "";
+          alert("Quiz question published live!");
+        });
+      }
+
+      const qQuiz = query(collection(db, "quizzes"), where("coachingCode", "==", currentUserData.coachingCode));
+      onSnapshot(qQuiz, (snap) => {
+        const container = document.getElementById('quizContentArea');
+        if (snap.empty) {
+          container.innerHTML = '<p class="text-slate-500 italic py-2 text-center">No active quiz questions right now.</p>';
+          return;
+        }
+        container.innerHTML = "";
+        snap.forEach(qDoc => {
+          const q = qDoc.data();
+          const qDiv = document.createElement('div');
+          qDiv.className = "p-3 bg-slate-900/90 border border-slate-800 rounded-xl space-y-2";
+          qDiv.innerHTML = `
+            <p class="font-bold text-white text-xs">${q.question}</p>
+            <div class="grid grid-cols-2 gap-1.5 text-[11px]">
+              <button class="opt-btn p-2 rounded-lg bg-slate-800 hover:bg-blue-600/30 text-left" data-opt="A">A: ${q.options.A}</button>
+              <button class="opt-btn p-2 rounded-lg bg-slate-800 hover:bg-blue-600/30 text-left" data-opt="B">B: ${q.options.B}</button>
+              ${q.options.C ? `<button class="opt-btn p-2 rounded-lg bg-slate-800 hover:bg-blue-600/30 text-left" data-opt="C">C: ${q.options.C}</button>` : ''}
+              ${q.options.D ? `<button class="opt-btn p-2 rounded-lg bg-slate-800 hover:bg-blue-600/30 text-left" data-opt="D">D: ${q.options.D}</button>` : ''}
+            </div>
+            <p class="quiz-feedback text-[10px] hidden font-semibold"></p>
+          `;
+
+          qDiv.querySelectorAll('.opt-btn').forEach(btn => {
+            btn.addEventListener('click', async () => {
+              const selected = btn.getAttribute('data-opt');
+              const feedback = qDiv.querySelector('.quiz-feedback');
+              feedback.classList.remove('hidden');
+
+              if (selected === q.correct) {
+                feedback.className = "quiz-feedback text-[10px] text-teal-400 font-semibold";
+                feedback.innerText = "Correct! +10 Points added to Leaderboard.";
+                await updateDoc(doc(db, "users", currentUserData.uid), {
+                  quizScore: (currentUserData.quizScore || 0) + 10
+                });
+              } else {
+                feedback.className = "quiz-feedback text-[10px] text-rose-400 font-semibold";
+                feedback.innerText = `Incorrect. Correct answer was Option ${q.correct}.`;
+              }
+            });
+          });
+          container.appendChild(qDiv);
+        });
+      });
+
+      const qBoard = query(collection(db, "users"), where("coachingCode", "==", currentUserData.coachingCode), where("status", "==", "active"), where("role", "==", "Student"));
+      onSnapshot(qBoard, (snap) => {
+        const sorted = [];
+        snap.forEach(d => sorted.push(d.data()));
+        sorted.sort((a, b) => (b.quizScore || 0) - (a.quizScore || 0));
+
+        if (sorted.length > 0 && sorted[0].quizScore > 0) {
+          document.getElementById('statTopRank').innerText = `${sorted[0].name.split(' ')[0]} (${sorted[0].quizScore}pts)`;
+        } else {
+          document.getElementById('statTopRank').innerText = "--";
+        }
+
+        const container = document.getElementById('leaderboardList');
+        if (sorted.length === 0) {
+          container.innerHTML = '<p class="text-slate-500 italic py-2 text-center">No students on leaderboard yet.</p>';
+          return;
+        }
+
+        container.innerHTML = sorted.map((u, i) => `
+          <div class="flex justify-between items-center p-2.5 ${i === 0 ? 'bg-amber-500/10 border border-amber-500/30' : 'bg-slate-900/60'} rounded-xl">
+            <div class="flex items-center gap-2">
+              <span class="font-bold font-mono text-xs ${i === 0 ? 'text-amber-400' : 'text-slate-400'}">#${i + 1}</span>
+              <p class="font-semibold text-white text-xs">${u.name}</p>
+            </div>
+            <span class="font-mono font-bold text-xs text-blue-400">${u.quizScore || 0} pts</span>
+          </div>
+        `).join('');
+      });
+    }
+
+    document.getElementById('btnLogout').addEventListener('click', () => signOut(auth));
 
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('sw.js');
