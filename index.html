@@ -5,13 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CoachingHub Pro</title>
   <link rel="manifest" href="manifest.json">
+  <!-- Dynamic SVG Favicon Logo -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎓</text></svg>">
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <!-- html2canvas for sealed un-editable receipts -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <style>
     body { background-color: #0b1120; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: #f8fafc; }
-    .glass-nav { background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255, 255, 255, 0.08); }
+    .glass-nav { background: rgba(15, 23, 42, 0.88); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255, 255, 255, 0.08); }
     .glass-card { background: rgba(30, 41, 59, 0.65); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); }
     .active-tab { background-color: #3b82f6 !important; color: #ffffff !important; box-shadow: 0 4px 14px 0 rgba(59, 130, 246, 0.4); }
     .hide-scrollbar::-webkit-scrollbar { display: none; }
@@ -24,12 +26,15 @@
   <div id="authView" class="p-4 flex flex-col items-center justify-center min-h-screen">
     <div class="glass-card w-full max-w-sm p-6 rounded-3xl shadow-2xl">
       <div class="flex items-center gap-3 mb-6">
-        <div class="w-12 h-12 bg-gradient-to-tr from-blue-600 to-indigo-500 rounded-2xl flex items-center justify-center text-white text-xl shadow-lg shadow-blue-500/30">
+        <!-- App Logo -->
+        <div class="w-12 h-12 bg-gradient-to-tr from-blue-600 via-indigo-600 to-cyan-400 rounded-2xl flex items-center justify-center text-white text-2xl shadow-lg shadow-blue-500/30">
           <i class="fas fa-graduation-cap"></i>
         </div>
         <div>
-          <h1 class="text-xl font-extrabold text-white tracking-tight">CoachingHub</h1>
-          <p class="text-xs text-slate-400">Classroom & Institute Pro</p>
+          <h1 class="text-xl font-extrabold text-white tracking-tight flex items-center gap-1.5">
+            CoachingHub <span class="text-[10px] px-2 py-0.5 rounded-full bg-blue-600/30 text-blue-400 font-bold border border-blue-500/30">PRO</span>
+          </h1>
+          <p class="text-xs text-slate-400">Classroom & Institute Portal</p>
         </div>
       </div>
 
@@ -73,6 +78,24 @@
         </button>
       </form>
       <p id="authErrorMsg" class="text-xs text-rose-400 text-center mt-3 font-medium"></p>
+    </div>
+  </div>
+
+  <!-- ================= STUDENT PENDING APPROVAL SCREEN ================= -->
+  <div id="studentPendingScreen" class="hidden min-h-screen p-6 flex flex-col items-center justify-center text-center">
+    <div class="glass-card max-w-sm w-full p-8 rounded-3xl space-y-4 border border-amber-500/30">
+      <div class="w-16 h-16 mx-auto bg-amber-500/20 text-amber-400 rounded-3xl flex items-center justify-center text-3xl shadow-lg">
+        <i class="fas fa-clock"></i>
+      </div>
+      <h2 class="text-xl font-bold text-white">Enrollment Pending</h2>
+      <p class="text-xs text-slate-400">
+        Aapne coaching code <span id="pendingScreenCode" class="text-blue-400 font-mono font-bold"></span> se apply kiya hai. Teacher ke approve karne ke baad aapka portal live ho jayega.
+      </p>
+      <div class="pt-2">
+        <button id="btnPendingLogout" class="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-semibold">
+          Sign Out
+        </button>
+      </div>
     </div>
   </div>
 
@@ -142,7 +165,7 @@
               <i class="fas fa-wallet text-emerald-400"></i>
             </div>
             <h3 class="text-2xl font-black text-emerald-400 mt-2" id="statFees">₹0</h3>
-            <p class="text-[10px] text-slate-500 mt-0.5">Cash + UPI Total</p>
+            <p class="text-[10px] text-slate-500 mt-0.5">Total Collected</p>
           </div>
           <div class="glass-card p-4 rounded-2xl">
             <div class="flex justify-between items-center text-slate-400 text-xs">
@@ -150,7 +173,7 @@
               <i class="fas fa-check-circle text-teal-400"></i>
             </div>
             <h3 class="text-2xl font-black text-teal-400 mt-2" id="statTodayPresent">0</h3>
-            <p class="text-[10px] text-slate-500 mt-0.5" id="attendanceDateLabel">Live Session</p>
+            <p class="text-[10px] text-slate-500 mt-0.5">Attendance</p>
           </div>
           <div class="glass-card p-4 rounded-2xl">
             <div class="flex justify-between items-center text-slate-400 text-xs">
@@ -177,7 +200,7 @@
           </div>
         </div>
 
-        <!-- Pending Approval Widget (Teacher Only) -->
+        <!-- Pending Approval Widget (Teacher Only: Approve & Decline) -->
         <div id="pendingApprovalWidget" class="hidden glass-card p-4 rounded-2xl border border-amber-500/30">
           <div class="flex justify-between items-center mb-3">
             <h3 class="text-xs font-bold text-amber-400 flex items-center gap-1.5">
@@ -233,7 +256,7 @@
 
       <!-- ================= 5. NOTES & PDF TAB ================= -->
       <section id="tab-notes" class="tab-content hidden space-y-4">
-        <!-- Teacher: Upload/Share Notes -->
+        <!-- Teacher: Add Notes -->
         <div id="teacherNotesCard" class="hidden glass-card p-4 rounded-2xl space-y-3 border border-indigo-500/30">
           <h3 class="text-xs font-bold text-indigo-400 flex items-center gap-1.5">
             <i class="fas fa-file-upload"></i> Upload / Add Study Notes
@@ -281,7 +304,7 @@
           </div>
         </div>
 
-        <!-- Quiz List (for Students) -->
+        <!-- Quiz List -->
         <div class="glass-card p-4 rounded-2xl space-y-3">
           <h3 class="text-xs font-bold text-white flex items-center gap-1.5">
             <i class="fas fa-question-circle text-blue-400"></i> Active Coaching Quizzes
@@ -338,9 +361,9 @@
   <div id="noticeModal" class="hidden fixed inset-0 bg-black/85 z-50 flex items-center justify-center p-4">
     <div class="glass-card bg-slate-900 border border-slate-700 w-full max-w-xs p-5 rounded-3xl shadow-2xl">
       <h3 class="text-sm font-bold text-white mb-3">Broadcast Notice</h3>
-      <textarea id="noticeTextInput" rows="3" placeholder="e.g. Sunday batch will start at 8:00 AM instead of 9:00 AM..." class="w-full p-3 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white focus:outline-none mb-3"></textarea>
+      <textarea id="noticeTextInput" rows="3" placeholder="e.g. Sunday batch will start at 8:00 AM..." class="w-full p-3 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white focus:outline-none mb-3"></textarea>
       <div class="flex gap-2">
-        <button id="btnSubmitNotice" class="flex-1 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-semibold">Post to All</button>
+        <button id="btnSubmitNotice" class="flex-1 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-semibold">Post Notice</button>
         <button id="btnCancelNotice" class="px-3 py-2 bg-slate-800 text-slate-400 rounded-xl text-xs">Cancel</button>
       </div>
     </div>
@@ -349,7 +372,6 @@
   <!-- ================= PROFESSIONAL RECEIPT CARD MODAL ================= -->
   <div id="receiptModal" class="hidden fixed inset-0 bg-black/85 z-50 flex items-center justify-center p-4">
     <div class="bg-white text-slate-900 rounded-3xl w-full max-w-xs p-5 shadow-2xl relative">
-      <!-- High-Resolution Capture Element -->
       <div id="captureReceiptCard" class="p-4 bg-gradient-to-b from-slate-50 to-white border-2 border-slate-200 rounded-2xl relative overflow-hidden">
         <div class="flex justify-between items-start pb-3 border-b border-slate-200">
           <div>
@@ -374,11 +396,10 @@
         </div>
 
         <div class="pt-2 text-center border-t border-slate-100">
-          <p class="text-[9px] text-slate-400 font-medium">Digital Tamper-Proof Stamp • Official Institute Copy</p>
+          <p class="text-[9px] text-slate-400 font-medium">Digital Sealed Record • Official Institute Copy</p>
         </div>
       </div>
 
-      <!-- Action Buttons -->
       <div class="flex gap-2 mt-4">
         <button id="btnDownloadCard" class="flex-1 py-2.5 bg-slate-900 hover:bg-black text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-md">
           <i class="fas fa-file-download"></i> Save Card
@@ -395,7 +416,7 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-    import { getFirestore, doc, setDoc, getDoc, updateDoc, collection, addDoc, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getFirestore, doc, setDoc, getDoc, updateDoc, deleteDoc, collection, addDoc, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyAWTAZP3RsKmmeCIrfXivRLlbBOobyM_TM",
@@ -476,7 +497,7 @@
             status = "active";
           } else {
             coachingCode = document.getElementById('authCoachingCode').value.trim().toUpperCase() || "HUB-781";
-            status = "pending";
+            status = "pending"; // Student initially locked in pending status
           }
 
           await setDoc(doc(db, "users", userCred.user.uid), {
@@ -510,11 +531,10 @@
       });
     });
 
-    // Auth State Monitor
+    // Auth State Monitor with Strict Gatekeeper
     onAuthStateChanged(auth, async (user) => {
       if (user) {
         document.getElementById('authView').classList.add('hidden');
-        document.getElementById('appContainer').classList.remove('hidden');
 
         try {
           const userDoc = await getDoc(doc(db, "users", user.uid));
@@ -523,13 +543,27 @@
           } else {
             currentUserData = { uid: user.uid, name: user.email.split('@')[0], role: "Teacher / Admin", coachingCode: "HUB-781", status: "active", quizScore: 0 };
           }
+
+          // Strict Student Gatekeeper
+          if (currentUserData.role === "Student" && currentUserData.status === "pending") {
+            document.getElementById('studentPendingScreen').classList.remove('hidden');
+            document.getElementById('pendingScreenCode').innerText = currentUserData.coachingCode;
+            document.getElementById('appContainer').classList.add('hidden');
+            return;
+          }
+
+          document.getElementById('studentPendingScreen').classList.add('hidden');
+          document.getElementById('appContainer').classList.remove('hidden');
           setupEnvironment();
+
         } catch (e) {
           currentUserData = { uid: user.uid, name: "Member", role: "Teacher / Admin", coachingCode: "HUB-781", status: "active", quizScore: 0 };
+          document.getElementById('appContainer').classList.remove('hidden');
           setupEnvironment();
         }
       } else {
         document.getElementById('authView').classList.remove('hidden');
+        document.getElementById('studentPendingScreen').classList.add('hidden');
         document.getElementById('appContainer').classList.add('hidden');
       }
     });
@@ -561,9 +595,9 @@
       loadQuizAndLeaderboard();
     }
 
-    // Teacher Features
+    // Teacher Features: Approve & Decline
     function loadTeacherFeatures() {
-      // 1. Pending Approvals
+      // 1. Pending Approvals with Accept & Reject/Decline
       const qPending = query(collection(db, "users"), where("coachingCode", "==", currentUserData.coachingCode), where("status", "==", "pending"));
       onSnapshot(qPending, (snap) => {
         document.getElementById('pendingCountBadge').innerText = snap.docs.length;
@@ -582,12 +616,22 @@
               <p class="font-semibold text-white">${u.name}</p>
               <p class="text-[10px] text-slate-400">${u.email}</p>
             </div>
-            <button class="px-3 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-semibold shadow">
-              Approve
-            </button>
+            <div class="flex gap-1.5">
+              <button class="btn-appr px-2.5 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-semibold shadow">
+                Approve
+              </button>
+              <button class="btn-decl px-2 py-1 bg-rose-600/30 hover:bg-rose-600 text-rose-300 hover:text-white rounded-lg text-xs font-semibold transition">
+                Decline
+              </button>
+            </div>
           `;
-          row.querySelector('button').addEventListener('click', async () => {
+          row.querySelector('.btn-appr').addEventListener('click', async () => {
             await updateDoc(doc(db, "users", d.id), { status: "active" });
+          });
+          row.querySelector('.btn-decl').addEventListener('click', async () => {
+            if (confirm(`Decline and remove ${u.name}?`)) {
+              await deleteDoc(doc(db, "users", d.id));
+            }
           });
           container.appendChild(row);
         });
@@ -633,7 +677,7 @@
         });
       });
 
-      // 3. Fees Recorded
+      // 3. Fees Recorded with Delete/Clean option
       const qFees = query(collection(db, "fees"), where("coachingCode", "==", currentUserData.coachingCode));
       onSnapshot(qFees, (snap) => {
         let total = 0;
@@ -655,16 +699,24 @@
               <p class="font-bold text-white">₹${f.amount} <span class="text-slate-400 font-normal text-[11px]">- ${f.studentName}</span></p>
               <p class="text-[10px] text-slate-400 font-mono">${f.receiptNo} • <span class="text-blue-400 font-semibold">${f.mode || 'Cash'}</span> • ${f.date}</p>
             </div>
-            <button class="px-2.5 py-1 bg-blue-600/20 text-blue-400 rounded-lg text-xs font-medium">Receipt</button>
+            <div class="flex gap-1.5">
+              <button class="btn-view-rcpt px-2.5 py-1 bg-blue-600/20 text-blue-400 rounded-lg text-xs font-medium">Receipt</button>
+              <button class="btn-del-rcpt p-1 text-slate-500 hover:text-rose-400 text-xs"><i class="fas fa-trash-alt"></i></button>
+            </div>
           `;
-          row.querySelector('button').addEventListener('click', () => openReceiptPopup(f));
+          row.querySelector('.btn-view-rcpt').addEventListener('click', () => openReceiptPopup(f));
+          row.querySelector('.btn-del-rcpt').addEventListener('click', async () => {
+            if (confirm("Delete this test/fee record?")) {
+              await deleteDoc(doc(db, "fees", d.id));
+            }
+          });
           container.appendChild(row);
         });
         document.getElementById('statFees').innerText = "₹" + total;
       });
     }
 
-    // Student Features
+    // Student Features (Approved Students Only)
     function loadStudentFeatures() {
       const qFees = query(collection(db, "fees"), where("studentId", "==", currentUserData.uid));
       onSnapshot(qFees, (snap) => {
@@ -686,9 +738,9 @@
               <p class="font-bold text-emerald-400">₹${f.amount} <span class="text-slate-300 font-normal text-[11px]">(${f.month})</span></p>
               <p class="text-[10px] text-slate-400 font-mono">${f.receiptNo} • Mode: ${f.mode || 'Cash'}</p>
             </div>
-            <button class="px-2.5 py-1 bg-blue-600/20 text-blue-400 rounded-lg text-xs font-medium">Receipt</button>
+            <button class="btn-view-rcpt px-2.5 py-1 bg-blue-600/20 text-blue-400 rounded-lg text-xs font-medium">Receipt</button>
           `;
-          row.querySelector('button').addEventListener('click', () => openReceiptPopup(f));
+          row.querySelector('.btn-view-rcpt').addEventListener('click', () => openReceiptPopup(f));
           container.appendChild(row);
         });
         document.getElementById('statFees').innerText = "₹" + total;
@@ -714,7 +766,7 @@
         onSnapshot(qStudents, (sSnap) => {
           const container = document.getElementById('attendanceList');
           if (sSnap.empty) {
-            container.innerHTML = '<p class="text-slate-500 italic py-3 text-center">No students registered yet.</p>';
+            container.innerHTML = '<p class="text-slate-500 italic py-3 text-center">No students available.</p>';
             return;
           }
           container.innerHTML = "";
@@ -818,10 +870,10 @@
       });
     });
 
-    // Share un-editable details on WhatsApp
+    // Share details on WhatsApp
     document.getElementById('btnShareLockedWhatsApp').addEventListener('click', () => {
       if (!lastReceiptObj) return;
-      const text = `*OFFICIAL FEE RECEIPT - COACHINGHUB*%0A--------------------------------%0A*Receipt No:* ${lastReceiptObj.receiptNo}%0A*Institute Code:* ${lastReceiptObj.coachingCode}%0A*Student:* ${lastReceiptObj.studentName}%0A*Billing Period:* ${lastReceiptObj.month}%0A*Amount Paid:* ₹${lastReceiptObj.amount}%0A*Payment Mode:* ${lastReceiptObj.mode || 'Cash'}%0A*Issued On:* ${lastReceiptObj.date}%0A*Status:* VERIFIED & PAID ✅%0A--------------------------------%0A_Digital system-generated locked record._`;
+      const text = `*OFFICIAL FEE RECEIPT - COACHINGHUB*%0A--------------------------------%0A*Receipt No:* ${lastReceiptObj.receiptNo}%0A*Institute Code:* ${lastReceiptObj.coachingCode}%0A*Student:* ${lastReceiptObj.studentName}%0A*Billing Period:* ${lastReceiptObj.month}%0A*Amount Paid:* ₹${lastReceiptObj.amount}%0A*Payment Mode:* ${lastReceiptObj.mode || 'Cash'}%0A*Issued On:* ${lastReceiptObj.date}%0A*Status:* VERIFIED & PAID ✅%0A--------------------------------%0A_Digital system-generated sealed record._`;
       window.open(`https://api.whatsapp.com/send?text=${text}`, '_blank');
     });
 
@@ -1019,6 +1071,7 @@
     }
 
     document.getElementById('btnLogout').addEventListener('click', () => signOut(auth));
+    document.getElementById('btnPendingLogout').addEventListener('click', () => signOut(auth));
 
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('sw.js');
